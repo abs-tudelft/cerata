@@ -12,6 +12,9 @@ FetchContent_MakeAvailable(cmake-modules)
 
 include(CompileUnits)
 
+option(BUILD_CERATA_TESTS "Build cerata tests" OFF)
+set(BUILD_TESTS ${BUILD_CERATA_TESTS})
+
 add_compile_unit(
   NAME cerata::core
   PRPS

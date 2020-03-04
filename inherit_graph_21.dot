@@ -1,0 +1,12 @@
+digraph "Graphical Class Hierarchy"
+{
+ // LATEX_PDF_SIZE
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  rankdir="LR";
+  Node0 [label="cerata::OutputGenerator",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classcerata_1_1_output_generator.html",tooltip="Abstract class to generate language specific output from Graphs."];
+  Node0 -> Node1 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node1 [label="cerata::dot::DOTOutputGenerator",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classcerata_1_1dot_1_1_d_o_t_output_generator.html",tooltip="OutputGenerator for DOT graphs."];
+  Node0 -> Node2 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node2 [label="cerata::vhdl::VHDLOutput\lGenerator",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classcerata_1_1vhdl_1_1_v_h_d_l_output_generator.html",tooltip="VHDL Output Generator."];
+}

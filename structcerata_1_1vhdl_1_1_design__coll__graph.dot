@@ -1,0 +1,13 @@
+digraph "cerata::vhdl::Design"
+{
+ // LATEX_PDF_SIZE
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  Node1 [label="cerata::vhdl::Design",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled", fontcolor="black",tooltip="A VHDL design that can generate code for a single file."];
+  Node2 -> Node1 [dir="back",color="darkorchid3",fontsize="10",style="dashed",label=" component_" ,fontname="Helvetica"];
+  Node2 [label="cerata::Component",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classcerata_1_1_component.html",tooltip="A Component graph."];
+  Node3 -> Node2 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node3 [label="cerata::Graph",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classcerata_1_1_graph.html",tooltip="A graph representing a hardware structure."];
+  Node4 -> Node3 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node4 [label="cerata::Named",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$structcerata_1_1_named.html",tooltip="Convenience structure for anything that is named. Names are case-sensitive."];
+}

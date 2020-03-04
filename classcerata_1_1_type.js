@@ -1,0 +1,36 @@
+var classcerata_1_1_type =
+[
+    [ "ID", "classcerata_1_1_type.html#a91f98d9644a669afca5c04ac7948006a", [
+      [ "BIT", "classcerata_1_1_type.html#a91f98d9644a669afca5c04ac7948006aa4e8382acadcb7aff0a94df468adab308", null ],
+      [ "VECTOR", "classcerata_1_1_type.html#a91f98d9644a669afca5c04ac7948006aa862325f1e1fd3dd72a76349e063908e7", null ],
+      [ "INTEGER", "classcerata_1_1_type.html#a91f98d9644a669afca5c04ac7948006aafc49b2b0779e7834543ec34b96d0e244", null ],
+      [ "STRING", "classcerata_1_1_type.html#a91f98d9644a669afca5c04ac7948006aab4fd2c693b54e44f280028b5890e9928", null ],
+      [ "BOOLEAN", "classcerata_1_1_type.html#a91f98d9644a669afca5c04ac7948006aa1492fc293a1b637fc772f8136e68d1e5", null ],
+      [ "RECORD", "classcerata_1_1_type.html#a91f98d9644a669afca5c04ac7948006aae8d9e2c2c8e373954c47fe02eccc3303", null ]
+    ] ],
+    [ "Type", "classcerata_1_1_type.html#a9028344b2803982aca260f846d9a9342", null ],
+    [ "AddMapper", "classcerata_1_1_type.html#a6623da973b2069d0c59006b65dbb350e", null ],
+    [ "CanGenerateMapper", "classcerata_1_1_type.html#afc7480ce7ba28f418d1610751660bbcc", null ],
+    [ "Copy", "classcerata_1_1_type.html#a529e4769fa40d34b555a6f03f2e1359c", null ],
+    [ "Copy", "classcerata_1_1_type.html#a9e64fef53e017182772d21d8a70a8736", null ],
+    [ "GenerateMapper", "classcerata_1_1_type.html#a97d9abe8eaab829cd9cb9b8a3299fc8f", null ],
+    [ "GetGenerics", "classcerata_1_1_type.html#ae5d31c3c2bef4e304b9d136c34da421e", null ],
+    [ "GetMapper", "classcerata_1_1_type.html#a718fb1ec37099aee7ecdb473a70a18c7", null ],
+    [ "GetMapper", "classcerata_1_1_type.html#a41bd027ab921817f72ac344461a918d9", null ],
+    [ "GetNested", "classcerata_1_1_type.html#a9474f5cd225962ac0067ee374f1f9d66", null ],
+    [ "id", "classcerata_1_1_type.html#a3cba6cef1da71d4749663514f1462b79", null ],
+    [ "Is", "classcerata_1_1_type.html#a81eb539196140bfdfa898c84110e6939", null ],
+    [ "IsEqual", "classcerata_1_1_type.html#a4db473fd22414b44b26b9cbbcf017da2", null ],
+    [ "IsGeneric", "classcerata_1_1_type.html#a2a8a25b4adc86dc763c8a9fc9237dd4c", null ],
+    [ "IsNested", "classcerata_1_1_type.html#a28345188e3adfbfe6dd5bb432bf87d08", null ],
+    [ "IsPhysical", "classcerata_1_1_type.html#aa4360de80f2c1aaddf1f2b80a72dbdc3", null ],
+    [ "mappers", "classcerata_1_1_type.html#a79e48c7beef561882df9efcb877925f6", null ],
+    [ "operator()", "classcerata_1_1_type.html#a8e84eacfce7f5d829060db1f2374bc76", null ],
+    [ "operator()", "classcerata_1_1_type.html#a038d3405324b46632f09f765cb884d3d", null ],
+    [ "RemoveMappersTo", "classcerata_1_1_type.html#ad187390d17dd90425cfbd2fc45178f2d", null ],
+    [ "ToString", "classcerata_1_1_type.html#aab861e96fa8fdca82a8a661d421971b5", null ],
+    [ "width", "classcerata_1_1_type.html#ae6faf44336262ce898327c9098bdcd35", null ],
+    [ "id_", "classcerata_1_1_type.html#ae591557acc864aec1263b95e49ba636e", null ],
+    [ "mappers_", "classcerata_1_1_type.html#ad720562db05be9b99f536dffa55c132d", null ],
+    [ "meta", "classcerata_1_1_type.html#ae35cf96f19ef1d9fa4561389bedc2e98", null ]
+];

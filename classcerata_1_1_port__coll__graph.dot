@@ -1,0 +1,23 @@
+digraph "cerata::Port"
+{
+ // LATEX_PDF_SIZE
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  Node1 [label="cerata::Port",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled", fontcolor="black",tooltip="A port is a terminator node on a graph."];
+  Node2 -> Node1 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node2 [label="cerata::NormalNode",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$structcerata_1_1_normal_node.html",tooltip="A single-input, multiple-outputs node."];
+  Node3 -> Node2 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node3 [label="cerata::MultiOutputNode",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$structcerata_1_1_multi_output_node.html",tooltip="A no-input, multiple-outputs node."];
+  Node4 -> Node3 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node4 [label="cerata::Node",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classcerata_1_1_node.html",tooltip="A node."];
+  Node5 -> Node4 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node5 [label="cerata::Object",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classcerata_1_1_object.html",tooltip="A Cerata Object on a graph."];
+  Node6 -> Node5 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node6 [label="cerata::Named",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$structcerata_1_1_named.html",tooltip="Convenience structure for anything that is named. Names are case-sensitive."];
+  Node7 -> Node4 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node7 [label="std::enable_shared\l_from_this\< Node \>",height=0.2,width=0.4,color="grey75", fillcolor="white", style="filled",tooltip=" "];
+  Node8 -> Node1 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node8 [label="cerata::Synchronous",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classcerata_1_1_synchronous.html",tooltip="Class to mark nodes with information for synchronous designs, e.g. clock domain."];
+  Node9 -> Node1 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node9 [label="cerata::Term",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classcerata_1_1_term.html",tooltip="A terminator structure to enable terminator sanity checks."];
+}

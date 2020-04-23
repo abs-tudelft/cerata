@@ -62,68 +62,75 @@ std::string Grapher::GenEdges(const Graph &graph, int level) {
         continue;
       }
 
+      auto draw_style = false;
       // Draw edge
       ret << tab(level);
       if (src->IsExpression() && style.config.nodes.expand.expression) {
         auto srcname = ToHex(*src);
+        ret << " -> ";
+        ret << NodeName(*dst);
         ret << "\"" + srcname + "\"";
-      } else {
+        draw_style = true;
+      } else if ((src->IsParameter() && style.config.nodes.parameters) || !src->IsParameter()) {
         auto srcname = NodeName(*src);
         ret << srcname;
-      }
-      ret << " -> ";
-      ret << NodeName(*dst);
-
-      // Set style
-      StyleBuilder sb;
-      ret << " [";
-      switch (src->type()->id()) {
-        default: {
-          sb << style.edge.base;
-          break;
-        }
+        ret << " -> ";
+        ret << NodeName(*dst);
+        draw_style = true;
       }
 
-      // Put array index label
-      if (src->array() && !dst->array()) {
-        sb << "label=\"" + std::to_string((*src->array())->IndexOf(*src)) + "\"";
-      }
-      if (!src->array() && dst->array()) {
-        sb << "label=\"" + std::to_string((*dst->array())->IndexOf(*dst)) + "\"";
-      }
-      if (src->array() && dst->array()) {
-        sb << "label=\"" + std::to_string((*src->array())->IndexOf(*src)) + " to "
-            + std::to_string((*dst->array())->IndexOf(*dst)) + "\"";
-      }
+      if (draw_style) {
+        // Set style
+        StyleBuilder sb;
+        ret << " [";
+        switch (src->type()->id()) {
+          default: {
+            sb << style.edge.base;
+            break;
+          }
+        }
 
-      if ((src->IsPort()) && style.config.nodes.ports) {
-        if (dst->IsSignal()) {
-          // Port to signal
-          sb << style.edge.port_to_sig;
-        } else if (dst->IsPort()) {
-          sb << style.edge.port_to_port;
+        // Put array index label
+        if (src->array() && !dst->array()) {
+          sb << "label=\"" + std::to_string((*src->array())->IndexOf(*src)) + "\"";
         }
-      } else if (src->IsSignal() && style.config.nodes.signals) {
-        if (dst->IsPort()) {
-          // Signal to port
-          sb << style.edge.sig_to_port;
+        if (!src->array() && dst->array()) {
+          sb << "label=\"" + std::to_string((*dst->array())->IndexOf(*dst)) + "\"";
         }
-      } else if (src->IsParameter() && style.config.nodes.parameters) {
-        sb << style.edge.param;
-      } else if (src->IsLiteral() && style.config.nodes.literals) {
-        sb << style.edge.lit;
-      } else if (src->IsExpression() && style.config.nodes.expressions) {
-        sb << style.edge.expr;
-        if (style.config.nodes.expand.expression) {
-          sb << "lhead=\"cluster_" + NodeName(*src) + "\"";
+        if (src->array() && dst->array()) {
+          sb << "label=\"" + std::to_string((*src->array())->IndexOf(*src)) + " to "
+              + std::to_string((*dst->array())->IndexOf(*dst)) + "\"";
         }
-      } else {
+
+        if ((src->IsPort()) && style.config.nodes.ports) {
+          if (dst->IsSignal()) {
+            // Port to signal
+            sb << style.edge.port_to_sig;
+          } else if (dst->IsPort()) {
+            sb << style.edge.port_to_port;
+          }
+        } else if (src->IsSignal() && style.config.nodes.signals) {
+          if (dst->IsPort()) {
+            // Signal to port
+            sb << style.edge.sig_to_port;
+          }
+        } else if (src->IsParameter() && style.config.nodes.parameters) {
+          sb << style.edge.param;
+        } else if (src->IsLiteral() && style.config.nodes.literals) {
+          sb << style.edge.lit;
+        } else if (src->IsExpression() && style.config.nodes.expressions) {
+          sb << style.edge.expr;
+          if (style.config.nodes.expand.expression) {
+            sb << "lhead=\"cluster_" + NodeName(*src) + "\"";
+          }
+        } else {
+          ret << "]\n";
+          continue;
+        }
+        ret << sb.ToString();
+        // Generic edge
         ret << "]\n";
-        continue;
       }
-      ret << sb.ToString();
-      // Generic edge
-      ret << "]\n";
     }
   }
 

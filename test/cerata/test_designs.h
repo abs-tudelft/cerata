@@ -245,6 +245,10 @@ std::shared_ptr<Component> GetAllPortTypesComponent() {
 }
 
 std::shared_ptr<Component> GetExampleDesign() {
+  // A top-level parameter node.
+  auto top_width = parameter("width");
+  // The top-level component.
+  auto top = component("top", {top_width});
   // A parameter node.
   auto x_width = parameter("width");
 
@@ -267,14 +271,14 @@ std::shared_ptr<Component> GetExampleDesign() {
   auto y = component("y", {y_width,
                            port("b", (*rec)({y_width}), Port::OUT)});
 
-  // The top-level component.
-  auto top = component("top");
   // Instantiate one X component.
   auto xi = top->Instantiate(x);
+  Connect(xi->GetNode("width"), top->GetNode("width"));
 
   // Instantiate three Y components.
   for (int i = 0; i < 3; i++) {
     auto yi = top->Instantiate(y);
+    Connect(yi->GetNode("width"), top->GetNode("width"));
     // Append the port array "a" on X, and source it with port "b" of the new Y instance.
     xi->prt_arr("a")->Append() <<= yi->prt("b");
   }

@@ -14,7 +14,7 @@ var searchData=
   ['default_5fvalue_75',['default_value',['../classcerata_1_1_parameter.html#a1facfaad939a0ac11ce733f94cc29031',1,'cerata::Parameter']]],
   ['default_5fvalue_5f_76',['default_value_',['../classcerata_1_1_parameter.html#a812ec3dd25649984c4968dfad4587a45',1,'cerata::Parameter']]],
   ['design_77',['Design',['../structcerata_1_1vhdl_1_1_design.html',1,'cerata::vhdl::Design'],['../structcerata_1_1vhdl_1_1_design.html#ab527b4533c29718bd8c7b2cca56264b9',1,'cerata::vhdl::Design::Design(Component *component, std::string notice=&quot;&quot;, std::string header=DEFAULT_LIBS)'],['../structcerata_1_1vhdl_1_1_design.html#af0754f5c61386d3b7ef1e1773fd4ffc4',1,'cerata::vhdl::Design::Design(const std::shared_ptr&lt; Component &gt; &amp;component, std::string notice=&quot;&quot;, std::string header=DEFAULT_LIBS)']]],
-  ['dir_78',['dir',['../classcerata_1_1_term.html#ab756f2ec03a2c93f9e0855f093e4436f',1,'cerata::Term::dir() const'],['../classcerata_1_1_term.html#ad5d2b86b16059306d8dbf73a0c972dad',1,'cerata::Term::Dir()']]],
+  ['dir_78',['Dir',['../classcerata_1_1_term.html#ad5d2b86b16059306d8dbf73a0c972dad',1,'cerata::Term::Dir()'],['../classcerata_1_1_term.html#ab756f2ec03a2c93f9e0855f093e4436f',1,'cerata::Term::dir() const']]],
   ['dir_5f_79',['dir_',['../classcerata_1_1_term.html#ac295338c204f67ca9a2b0ac7e0f1ffd6',1,'cerata::Term']]],
   ['domain_80',['domain',['../classcerata_1_1_synchronous.html#aa38bd1d2df330c53caa73af16bfc815b',1,'cerata::Synchronous']]],
   ['domain_5f_81',['domain_',['../classcerata_1_1_synchronous.html#aa85e3dba8a264fc3285c691bd737007f',1,'cerata::Synchronous']]],

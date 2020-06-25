@@ -14,7 +14,7 @@ var searchData=
   ['appendblanklineifnotempty_11',['AppendBlankLineIfNotEmpty',['../structcerata_1_1vhdl_1_1_block.html#ae291068a4a07034b5ed756eede7526ee',1,'cerata::vhdl::Block']]],
   ['appendreferences_12',['AppendReferences',['../classcerata_1_1_node_array.html#a6864e95a2f60a81ee569e287657dfbf0',1,'cerata::NodeArray::AppendReferences()'],['../classcerata_1_1_expression.html#a0ee8ccda090693e51ec8dd02e22a226a',1,'cerata::Expression::AppendReferences()'],['../classcerata_1_1_node.html#af84a91927bedf9b9a078f2320bfe05df',1,'cerata::Node::AppendReferences()'],['../classcerata_1_1_object.html#a40911cd793f5b48b163c33d3542356fe',1,'cerata::Object::AppendReferences()']]],
   ['arch_13',['Arch',['../structcerata_1_1vhdl_1_1_arch.html',1,'cerata::vhdl']]],
-  ['array_14',['array',['../classcerata_1_1_node.html#a82ee8ad87599589771523bd0804c167d',1,'cerata::Node::array()'],['../classcerata_1_1_object.html#ae78b22526e8a1a15cff94ade30bea8e9af5df49be3b685f5e7c4e7dfa2da1c7a4',1,'cerata::Object::ARRAY()']]],
+  ['array_14',['ARRAY',['../classcerata_1_1_object.html#ae78b22526e8a1a15cff94ade30bea8e9af5df49be3b685f5e7c4e7dfa2da1c7a4',1,'cerata::Object::ARRAY()'],['../classcerata_1_1_node.html#a82ee8ad87599589771523bd0804c167d',1,'cerata::Node::array()']]],
   ['array_5f_15',['array_',['../classcerata_1_1_node.html#acd293d1c3438d280371b02737c71a946',1,'cerata::Node']]],
   ['as_16',['As',['../namespacecerata.html#a4f450a7110543c4b320aaef2ca3158aa',1,'cerata']]],
   ['at_17',['at',['../classcerata_1_1_record.html#a1ff3f58bf61da7c0b71fccdead213dcd',1,'cerata::Record::at(const std::string &amp;name) const'],['../classcerata_1_1_record.html#aaf6c55fd785688451f5c735101388017',1,'cerata::Record::at(size_t i) const']]],

@@ -97,5 +97,6 @@ var hierarchy =
     ] ],
     [ "cerata::vhdl::trloc", "structcerata_1_1vhdl_1_1trloc.html", null ],
     [ "cerata::dot::Config::NodeConfig::TypeConfig", "structcerata_1_1dot_1_1_config_1_1_node_config_1_1_type_config.html", null ],
-    [ "cerata::dot::Style::NodeStyle::TypeStyle", "structcerata_1_1dot_1_1_style_1_1_node_style_1_1_type_style.html", null ]
+    [ "cerata::dot::Style::NodeStyle::TypeStyle", "structcerata_1_1dot_1_1_style_1_1_node_style_1_1_type_style.html", null ],
+    [ "cerata::yaml::YamlConverter", "classcerata_1_1yaml_1_1_yaml_converter.html", null ]
 ];

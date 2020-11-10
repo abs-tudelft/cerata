@@ -8,7 +8,7 @@ digraph "cerata::TypeMapper"
   Node2 [label="cerata::Named",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$structcerata_1_1_named.html",tooltip="Convenience structure for anything that is named. Names are case-sensitive."];
   Node3 -> Node1 [dir="back",color="darkorchid3",fontsize="10",style="dashed",label=" matrix_" ,fontname="Helvetica"];
   Node3 [label="cerata::MappingMatrix\l\< int64_t \>",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classcerata_1_1_mapping_matrix.html",tooltip=" "];
-  Node4 -> Node1 [dir="back",color="darkorchid3",fontsize="10",style="dashed",label=" b_\na_" ,fontname="Helvetica"];
+  Node4 -> Node1 [dir="back",color="darkorchid3",fontsize="10",style="dashed",label=" a_\nb_" ,fontname="Helvetica"];
   Node4 [label="cerata::Type",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classcerata_1_1_type.html",tooltip="A Type."];
   Node2 -> Node4 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
   Node5 -> Node4 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];

@@ -2,6 +2,9 @@ var namespacecerata =
 [
     [ "dot", "namespacecerata_1_1dot.html", "namespacecerata_1_1dot" ],
     [ "vhdl", "namespacecerata_1_1vhdl.html", "namespacecerata_1_1vhdl" ],
+    [ "yaml", null, [
+      [ "YamlConverter", "classcerata_1_1yaml_1_1_yaml_converter.html", "classcerata_1_1yaml_1_1_yaml_converter" ]
+    ] ],
     [ "Bit", "structcerata_1_1_bit.html", "structcerata_1_1_bit" ],
     [ "Boolean", "structcerata_1_1_boolean.html", "structcerata_1_1_boolean" ],
     [ "ClockDomain", "structcerata_1_1_clock_domain.html", "structcerata_1_1_clock_domain" ],

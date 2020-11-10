@@ -27,10 +27,8 @@ constexpr auto YAML_KEY_RECORD = "record";
 constexpr auto YAML_KEY_FIELDS = "fields";
 constexpr auto YAML_KEY_NAME = "name";
 constexpr auto YAML_KEY_WIDTH = "width";
-constexpr auto YAML_KEY_DIR = "dir";
 constexpr auto YAML_KEY_VECTOR = "vector";
-constexpr auto YAML_VAL_KERNEL_TO_PLATFORM = "k2p";
-constexpr auto YAML_VAL_PLATFORM_TO_KERNEL = "p2k";
+constexpr auto YAML_KEY_REVERSE = "reverse";
 
 /**
  * \brief Converts YAMLs to Cerata types.

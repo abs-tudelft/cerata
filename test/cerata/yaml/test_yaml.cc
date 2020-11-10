@@ -61,7 +61,7 @@ TEST(YAML, Reversed) {
 - field:
   name: hi
   width: 2
-  dir: k2p
+  reverse: true
 )", record({field("hi", vector(2), true)}));
 }
 
@@ -70,7 +70,7 @@ TEST(YAML, TopLevelRecord) {
 - field:
   name: a
   width: 2
-  dir: k2p
+  reverse: true
 - field:
   name: b
   width: 1
@@ -86,7 +86,7 @@ TEST(YAML, NestedRecord) {
   vector: true
 - record:
   name: b
-  dir: k2p
+  reverse: true
   fields:
   - field:
     name: x

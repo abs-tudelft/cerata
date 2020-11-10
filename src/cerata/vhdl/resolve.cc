@@ -24,6 +24,7 @@
 #include "cerata/graph.h"
 #include "cerata/edge.h"
 #include "cerata/vhdl/vhdl_types.h"
+#include "cerata/vhdl/vhdl.h"
 
 namespace cerata::vhdl {
 
@@ -31,8 +32,12 @@ static int ResolvePorts(Component *comp, Instance *inst, NodeMap *rebinding) {
   int i = 0;
   auto ports = inst->GetAll<Port>();
   for (const auto &port : ports) {
-    AttachSignalToNode(comp, port, rebinding);
-    i++;
+    if (port->type()->meta.count(meta::NO_INSERT_SIGNAL) == 0) {
+      AttachSignalToNode(comp, port, rebinding);
+      i++;
+    } else {
+      CERATA_LOG(DEBUG, "Skipping signal insertion for port " + port->name());
+    }
   }
   return i;
 }
@@ -51,8 +56,12 @@ static int ResolvePortArrays(Component *comp, Instance *inst, NodeMap *rebinding
   int i = 0;
   // To solve this, we're just going to insert a signal array for every port array.
   for (const auto &pa : inst->GetAll<PortArray>()) {
-    AttachSignalArrayToNodeArray(comp, pa, rebinding);
-    i++;
+    if (pa->type()->meta.count(meta::NO_INSERT_SIGNAL) == 0) {
+      AttachSignalArrayToNodeArray(comp, pa, rebinding);
+      i++;
+    } else {
+      CERATA_LOG(DEBUG, "Skipping signal insertion for port " + pa->name());
+    }
   }
   return i;
 }

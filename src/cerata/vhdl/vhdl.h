@@ -51,6 +51,8 @@ constexpr char FORCE_VECTOR[] = "vhdl_force_vector";
 constexpr char WAS_EXPANDED[] = "vhdl_expanded_stream_done";
 /// Reserved metadata key for stream expansion.
 constexpr char EXPAND_TYPE[] = "vhdl_expand_stream";
+/// Reserved metadata key to prevent VHDL signal insertion, useful for clocks.
+constexpr char NO_INSERT_SIGNAL[] = "vhdl_no_insert_signal";
 }  // namespace meta
 
 /// VHDL Output Generator.

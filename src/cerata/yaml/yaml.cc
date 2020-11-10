@@ -65,17 +65,8 @@ auto YamlConverter::Visit(const YAML::Node &node) -> Status {
         if (node[YAML_KEY_VECTOR]) {
           force_vector_ = node[YAML_KEY_VECTOR].as<bool>();
         }
-        if (node[YAML_KEY_DIR]) {
-          auto val = node[YAML_KEY_DIR].as<std::string>();
-          if (val == YAML_VAL_KERNEL_TO_PLATFORM) {
-            reverse_ = true;
-          } else if (val == YAML_VAL_PLATFORM_TO_KERNEL) {
-            reverse_ = false;
-          } else {
-            return Status(Error::YAMLError,
-                          "Field " + name_ + " direction must be either " + std::string(YAML_VAL_PLATFORM_TO_KERNEL)
-                              + " or " + std::string(YAML_VAL_KERNEL_TO_PLATFORM));
-          }
+        if (node[YAML_KEY_REVERSE]) {
+          reverse_ = node[YAML_KEY_REVERSE].as<bool>();
         }
         if (node[YAML_KEY_FIELDS] && (width_ == 0)) {
           auto fields = node[YAML_KEY_FIELDS];

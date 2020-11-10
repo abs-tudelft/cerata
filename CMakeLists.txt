@@ -7,10 +7,16 @@ include(FetchContent)
 FetchContent_Declare(cmake-modules
   GIT_REPOSITORY  https://github.com/abs-tudelft/cmake-modules.git
   GIT_TAG         master
-)
+  )
 FetchContent_MakeAvailable(cmake-modules)
 
 include(CompileUnits)
+
+FetchContent_Declare(putong
+  GIT_REPOSITORY  https://github.com/abs-tudelft/putong
+  GIT_TAG         master
+  )
+FetchContent_MakeAvailable(putong)
 
 option(BUILD_CERATA_TESTS "Build cerata tests" OFF)
 set(BUILD_TESTS ${BUILD_CERATA_TESTS})
@@ -45,6 +51,8 @@ add_compile_unit(
     test/cerata/test_types.cc
     test/cerata/test_nodes.cc
     test/cerata/test_graphs.cc
+  DEPS
+    putong
 )
 
 add_compile_unit(
@@ -87,12 +95,30 @@ add_compile_unit(
     cerata::dot
 )
 
-set(CERATA_BACKENDS)
+add_compile_unit(
+  NAME cerata::yaml
+  PRPS
+    CXX_STANDARD 17
+    CXX_STANDARD_REQUIRED ON
+  SRCS
+    src/cerata/yaml/yaml.cc
+  TSTS
+    test/cerata/yaml/test_yaml.cc
+  DEPS
+    cerata::core
+    yaml-cpp
+)
+
+set(CERATA_MODULES)
 if(BUILD_CERATA_DOT)
-  list(APPEND CERATA_BACKENDS "cerata::dot")
+  list(APPEND CERATA_MODULES "cerata::dot")
 endif()
 if(BUILD_CERATA_VHDL)
-  list(APPEND CERATA_BACKENDS "cerata::vhdl")
+  list(APPEND CERATA_MODULES "cerata::vhdl")
+endif()
+if(BUILD_CERATA_YAML)
+  find_package(yaml-cpp 0.6 CONFIG REQUIRED)
+  list(APPEND CERATA_MODULES "cerata::yaml")
 endif()
 
 add_compile_unit(
@@ -102,7 +128,7 @@ add_compile_unit(
     CXX_STANDARD_REQUIRED ON
   DEPS
     cerata::core
-    ${CERATA_BACKENDS}
+    ${CERATA_MODULES}
 )
 
 compile_units()

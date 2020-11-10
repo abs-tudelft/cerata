@@ -267,15 +267,15 @@ std::optional<Node *> Bit::width() const {
   return rintl(1);
 }
 
-Field::Field(std::string name, std::shared_ptr<Type> type, bool invert, bool sep)
-    : Named(std::move(name)), type_(std::move(type)), invert_(invert), sep_(sep) {}
+Field::Field(std::string name, std::shared_ptr<Type> type, bool reverse, bool sep)
+    : Named(std::move(name)), type_(std::move(type)), reverse_(reverse), sep_(sep) {}
 
-std::shared_ptr<Field> field(const std::string &name, const std::shared_ptr<Type> &type, bool invert, bool sep) {
-  return std::make_shared<Field>(name, type, invert, sep);
+std::shared_ptr<Field> field(const std::string &name, const std::shared_ptr<Type> &type, bool reverse, bool sep) {
+  return std::make_shared<Field>(name, type, reverse, sep);
 }
 
-std::shared_ptr<Field> field(const std::shared_ptr<Type> &type, bool invert, bool sep) {
-  return std::make_shared<Field>(type->name(), type, invert, sep);
+std::shared_ptr<Field> field(const std::shared_ptr<Type> &type, bool reverse, bool sep) {
+  return std::make_shared<Field>(type->name(), type, reverse, sep);
 }
 
 std::shared_ptr<Field> NoSep(std::shared_ptr<Field> field) {
@@ -336,9 +336,12 @@ bool Record::IsEqual(const Type &other) const {
   }
   // Each field must also be of equal type
   for (size_t i = 0; i < this->num_fields(); i++) {
-    auto a = this->at(i)->type();
-    auto b = other_record.at(i)->type();
-    if (!a->IsEqual(*b)) {
+    auto a = this->at(i);
+    auto b = other_record.at(i);
+    if (a->reversed() != b->reversed()) {
+      return false;
+    }
+    if (!a->type()->IsEqual(*b->type())) {
       return false;
     }
   }
@@ -425,7 +428,7 @@ std::shared_ptr<Field> Field::Copy(const NodeMap &rebinding) const {
   if (type_->IsGeneric()) {
     type = type_->Copy(rebinding);
   }
-  result = field(name(), type, invert_, sep_);
+  result = field(name(), type, reverse_, sep_);
   result->meta = meta;
   return result;
 }
@@ -436,7 +439,7 @@ Field &Field::SetType(std::shared_ptr<Type> type) {
 }
 
 std::shared_ptr<Field> Field::Reverse() {
-  invert_ = true;
+  reverse_ = true;
   return shared_from_this();
 }
 

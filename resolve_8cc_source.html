@@ -113,44 +113,53 @@ $(document).ready(function(){initNavTree('resolve_8cc_source.html',''); initResi
 <div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;<span class="preprocessor">#include &quot;cerata/graph.h&quot;</span></div>
 <div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;<span class="preprocessor">#include &quot;cerata/edge.h&quot;</span></div>
 <div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;<span class="preprocessor">#include &quot;cerata/vhdl/vhdl_types.h&quot;</span></div>
-<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160; </div>
-<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;<span class="keyword">namespace </span><a class="code" href="namespacecerata_1_1vhdl.html">cerata::vhdl</a> {</div>
-<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160; </div>
-<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;<span class="keyword">static</span> <span class="keywordtype">int</span> ResolvePorts(Component *comp, Instance *inst, <a class="code" href="namespacecerata.html#aaadbf80a46cf891ebe1a1defc66cecb9">NodeMap</a> *rebinding) {</div>
-<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;  <span class="keywordtype">int</span> i = 0;</div>
-<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;  <span class="keyword">auto</span> ports = inst-&gt;GetAll&lt;Port&gt;();</div>
-<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;  <span class="keywordflow">for</span> (<span class="keyword">const</span> <span class="keyword">auto</span> &amp;<a class="code" href="namespacecerata.html#a6dedad08e1c760104489facb8e7f8455">port</a> : ports) {</div>
-<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;    <a class="code" href="namespacecerata.html#aae3d7c4f3efb99d3dcee77c87024208f">AttachSignalToNode</a>(comp, <a class="code" href="namespacecerata.html#a6dedad08e1c760104489facb8e7f8455">port</a>, rebinding);</div>
-<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;    i++;</div>
-<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;  }</div>
-<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;  <span class="keywordflow">return</span> i;</div>
-<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;}</div>
-<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160; </div>
-<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;<span class="keyword">static</span> <span class="keywordtype">int</span> ResolvePortArrays(Component *comp, Instance *inst, <a class="code" href="namespacecerata.html#aaadbf80a46cf891ebe1a1defc66cecb9">NodeMap</a> *rebinding) {</div>
-<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;  <span class="comment">// There is something utterly annoying in VHDL; range expressions must be &quot;locally static&quot; in port map</span></div>
-<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;  <span class="comment">// associativity lists on the left hand side. This means we can&#39;t use any type generic nodes.</span></div>
-<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;  <span class="comment">// Thanks, VHDL.</span></div>
-<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;  <span class="keywordtype">int</span> i = 0;</div>
-<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;  <span class="comment">// To solve this, we&#39;re just going to insert a signal array for every port array.</span></div>
-<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;  <span class="keywordflow">for</span> (<span class="keyword">const</span> <span class="keyword">auto</span> &amp;pa : inst-&gt;GetAll&lt;PortArray&gt;()) {</div>
-<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;    <a class="code" href="namespacecerata.html#aa7554850cf2775a320602b3739d980bf">AttachSignalArrayToNodeArray</a>(comp, pa, rebinding);</div>
-<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;    i++;</div>
-<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;  }</div>
-<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;  <span class="keywordflow">return</span> i;</div>
-<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;}</div>
-<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160; </div>
-<div class="line"><a name="l00060"></a><span class="lineno"><a class="line" href="structcerata_1_1vhdl_1_1_resolve.html#a6fd08e25e94b9fa58cb82d979f10ee38">   60</a></span>&#160;<a class="code" href="classcerata_1_1_component.html">Component</a> *<a class="code" href="structcerata_1_1vhdl_1_1_resolve.html#a6fd08e25e94b9fa58cb82d979f10ee38">Resolve::SignalizePorts</a>(<a class="code" href="classcerata_1_1_component.html">Component</a> *comp) {</div>
-<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;  <span class="comment">// We are potentially going to make a bunch of copies of type generic nodes and array sizes.</span></div>
-<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;  <span class="comment">// Remember which ones we did already and where we left their copy through a map.</span></div>
-<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;  <span class="keyword">auto</span> children = comp-&gt;<a class="code" href="classcerata_1_1_component.html#af2d92d8dba7d116f6c4a1c0268607ee1">children</a>();</div>
-<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;  <span class="keywordflow">for</span> (<span class="keyword">const</span> <span class="keyword">auto</span> &amp;inst : children) {</div>
-<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;    ResolvePorts(comp, inst, comp-&gt;<a class="code" href="classcerata_1_1_component.html#a31b5e5e2f61e814f58212831dac17984">inst_to_comp_map</a>());</div>
-<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;    ResolvePortArrays(comp, inst, comp-&gt;<a class="code" href="classcerata_1_1_component.html#a31b5e5e2f61e814f58212831dac17984">inst_to_comp_map</a>());</div>
-<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;  }</div>
-<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;  <span class="keywordflow">return</span> comp;</div>
-<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;}</div>
-<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160; </div>
-<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;}  <span class="comment">// namespace cerata::vhdl</span></div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;<span class="preprocessor">#include &quot;cerata/vhdl/vhdl.h&quot;</span></div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160; </div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;<span class="keyword">namespace </span><a class="code" href="namespacecerata_1_1vhdl.html">cerata::vhdl</a> {</div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160; </div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;<span class="keyword">static</span> <span class="keywordtype">int</span> ResolvePorts(Component *comp, Instance *inst, <a class="code" href="namespacecerata.html#aaadbf80a46cf891ebe1a1defc66cecb9">NodeMap</a> *rebinding) {</div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;  <span class="keywordtype">int</span> i = 0;</div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;  <span class="keyword">auto</span> ports = inst-&gt;GetAll&lt;Port&gt;();</div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;  <span class="keywordflow">for</span> (<span class="keyword">const</span> <span class="keyword">auto</span> &amp;<a class="code" href="namespacecerata.html#a6dedad08e1c760104489facb8e7f8455">port</a> : ports) {</div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;    <span class="keywordflow">if</span> (<a class="code" href="namespacecerata.html#a6dedad08e1c760104489facb8e7f8455">port</a>-&gt;type()-&gt;meta.count(meta::NO_INSERT_SIGNAL) == 0) {</div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;      <a class="code" href="namespacecerata.html#aae3d7c4f3efb99d3dcee77c87024208f">AttachSignalToNode</a>(comp, <a class="code" href="namespacecerata.html#a6dedad08e1c760104489facb8e7f8455">port</a>, rebinding);</div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;      i++;</div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;    } <span class="keywordflow">else</span> {</div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;      CERATA_LOG(DEBUG, <span class="stringliteral">&quot;Skipping signal insertion for port &quot;</span> + <a class="code" href="namespacecerata.html#a6dedad08e1c760104489facb8e7f8455">port</a>-&gt;name());</div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;    }</div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;  }</div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;  <span class="keywordflow">return</span> i;</div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;}</div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160; </div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;<span class="keyword">static</span> <span class="keywordtype">int</span> ResolvePortArrays(Component *comp, Instance *inst, <a class="code" href="namespacecerata.html#aaadbf80a46cf891ebe1a1defc66cecb9">NodeMap</a> *rebinding) {</div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;  <span class="comment">// There is something utterly annoying in VHDL; range expressions must be &quot;locally static&quot; in port map</span></div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;  <span class="comment">// associativity lists on the left hand side. This means we can&#39;t use any type generic nodes.</span></div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;  <span class="comment">// Thanks, VHDL.</span></div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;  <span class="keywordtype">int</span> i = 0;</div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;  <span class="comment">// To solve this, we&#39;re just going to insert a signal array for every port array.</span></div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;  <span class="keywordflow">for</span> (<span class="keyword">const</span> <span class="keyword">auto</span> &amp;pa : inst-&gt;GetAll&lt;PortArray&gt;()) {</div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;    <span class="keywordflow">if</span> (pa-&gt;type()-&gt;meta.count(meta::NO_INSERT_SIGNAL) == 0) {</div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;      <a class="code" href="namespacecerata.html#aa7554850cf2775a320602b3739d980bf">AttachSignalArrayToNodeArray</a>(comp, pa, rebinding);</div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;      i++;</div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;    } <span class="keywordflow">else</span> {</div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;      CERATA_LOG(DEBUG, <span class="stringliteral">&quot;Skipping signal insertion for port &quot;</span> + pa-&gt;name());</div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;    }</div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;  }</div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;  <span class="keywordflow">return</span> i;</div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;}</div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160; </div>
+<div class="line"><a name="l00069"></a><span class="lineno"><a class="line" href="structcerata_1_1vhdl_1_1_resolve.html#a6fd08e25e94b9fa58cb82d979f10ee38">   69</a></span>&#160;<a class="code" href="classcerata_1_1_component.html">Component</a> *<a class="code" href="structcerata_1_1vhdl_1_1_resolve.html#a6fd08e25e94b9fa58cb82d979f10ee38">Resolve::SignalizePorts</a>(<a class="code" href="classcerata_1_1_component.html">Component</a> *comp) {</div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;  <span class="comment">// We are potentially going to make a bunch of copies of type generic nodes and array sizes.</span></div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;  <span class="comment">// Remember which ones we did already and where we left their copy through a map.</span></div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;  <span class="keyword">auto</span> children = comp-&gt;<a class="code" href="classcerata_1_1_component.html#af2d92d8dba7d116f6c4a1c0268607ee1">children</a>();</div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;  <span class="keywordflow">for</span> (<span class="keyword">const</span> <span class="keyword">auto</span> &amp;inst : children) {</div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;    ResolvePorts(comp, inst, comp-&gt;<a class="code" href="classcerata_1_1_component.html#a31b5e5e2f61e814f58212831dac17984">inst_to_comp_map</a>());</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;    ResolvePortArrays(comp, inst, comp-&gt;<a class="code" href="classcerata_1_1_component.html#a31b5e5e2f61e814f58212831dac17984">inst_to_comp_map</a>());</div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;  }</div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;  <span class="keywordflow">return</span> comp;</div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;}</div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160; </div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;}  <span class="comment">// namespace cerata::vhdl</span></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 <div class="ttc" id="aclasscerata_1_1_component_html"><div class="ttname"><a href="classcerata_1_1_component.html">cerata::Component</a></div><div class="ttdoc">A Component graph.</div><div class="ttdef"><b>Definition:</b> <a href="graph_8h_source.html#l00158">graph.h:158</a></div></div>
@@ -159,14 +168,14 @@ $(document).ready(function(){initNavTree('resolve_8cc_source.html',''); initResi
 <div class="ttc" id="aclasscerata_1_1_component_html_af2d92d8dba7d116f6c4a1c0268607ee1"><div class="ttname"><a href="classcerata_1_1_component.html#af2d92d8dba7d116f6c4a1c0268607ee1">cerata::Component::children</a></div><div class="ttdeci">std::vector&lt; Instance * &gt; children() const</div><div class="ttdoc">Returns all Instance graphs from this Component.</div><div class="ttdef"><b>Definition:</b> <a href="graph_8h_source.html#l00187">graph.h:187</a></div></div>
 <div class="ttc" id="anamespacecerata_html_aa7554850cf2775a320602b3739d980bf"><div class="ttname"><a href="namespacecerata.html#aa7554850cf2775a320602b3739d980bf">cerata::AttachSignalArrayToNodeArray</a></div><div class="ttdeci">SignalArray * AttachSignalArrayToNodeArray(Component *comp, NodeArray *array, NodeMap *rebinding)</div><div class="ttdoc">Attach a SignalArray to a Node, redirecting all edges through the new SignalArray.</div><div class="ttdef"><b>Definition:</b> <a href="edge_8cc_source.html#l00327">edge.cc:327</a></div></div>
 <div class="ttc" id="aclasscerata_1_1_component_html_a31b5e5e2f61e814f58212831dac17984"><div class="ttname"><a href="classcerata_1_1_component.html#a31b5e5e2f61e814f58212831dac17984">cerata::Component::inst_to_comp_map</a></div><div class="ttdeci">NodeMap * inst_to_comp_map()</div><div class="ttdoc">Return the component node to instance node mapping.</div><div class="ttdef"><b>Definition:</b> <a href="graph_8h_source.html#l00198">graph.h:198</a></div></div>
-<div class="ttc" id="astructcerata_1_1vhdl_1_1_resolve_html_a6fd08e25e94b9fa58cb82d979f10ee38"><div class="ttname"><a href="structcerata_1_1vhdl_1_1_resolve.html#a6fd08e25e94b9fa58cb82d979f10ee38">cerata::vhdl::Resolve::SignalizePorts</a></div><div class="ttdeci">static Component * SignalizePorts(Component *comp)</div><div class="ttdoc">Transforms the component, inserting signals for every instance port.</div><div class="ttdef"><b>Definition:</b> <a href="resolve_8cc_source.html#l00060">resolve.cc:60</a></div></div>
+<div class="ttc" id="astructcerata_1_1vhdl_1_1_resolve_html_a6fd08e25e94b9fa58cb82d979f10ee38"><div class="ttname"><a href="structcerata_1_1vhdl_1_1_resolve.html#a6fd08e25e94b9fa58cb82d979f10ee38">cerata::vhdl::Resolve::SignalizePorts</a></div><div class="ttdeci">static Component * SignalizePorts(Component *comp)</div><div class="ttdoc">Transforms the component, inserting signals for every instance port.</div><div class="ttdef"><b>Definition:</b> <a href="resolve_8cc_source.html#l00069">resolve.cc:69</a></div></div>
 <div class="ttc" id="anamespacecerata_html_a6dedad08e1c760104489facb8e7f8455"><div class="ttname"><a href="namespacecerata.html#a6dedad08e1c760104489facb8e7f8455">cerata::port</a></div><div class="ttdeci">std::shared_ptr&lt; Port &gt; port(const std::string &amp;name, const std::shared_ptr&lt; Type &gt; &amp;type, Term::Dir dir, const std::shared_ptr&lt; ClockDomain &gt; &amp;domain)</div><div class="ttdoc">Make a new port with some name, type and direction.</div><div class="ttdef"><b>Definition:</b> <a href="port_8cc_source.html#l00022">port.cc:22</a></div></div>
 <div class="ttc" id="anamespacecerata_1_1vhdl_html"><div class="ttname"><a href="namespacecerata_1_1vhdl.html">cerata::vhdl</a></div><div class="ttdoc">Contains everything related to the VHDL back-end.</div><div class="ttdef"><b>Definition:</b> <a href="architecture_8cc_source.html#l00031">architecture.cc:31</a></div></div>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a class="el" href="dir_d693b6a5dfcef49756eb42a0c06c09ce.html">cerata</a></li><li class="navelem"><a class="el" href="dir_d598dc95f0907952198635dc489aa768.html">vhdl</a></li><li class="navelem"><b>resolve.cc</b></li>
-    <li class="footer">Generated on Tue Nov 10 2020 12:46:19 for Cerata by <a href="http://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.8.20 </li>
+    <li class="footer">Generated on Tue Nov 10 2020 17:22:01 for Cerata by <a href="http://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.8.20 </li>
   </ul>
 </div>
 </body>

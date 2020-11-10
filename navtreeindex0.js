@@ -1,5 +1,6 @@
 var NAVTREEINDEX0 =
 {
+"":[1,0,0,2],
 "annotated.html":[1,0],
 "api_8h_source.html":[2,0,0,0,3],
 "architecture_8cc_source.html":[2,0,0,0,1,0],
@@ -248,6 +249,5 @@ var NAVTREEINDEX0 =
 "classcerata_1_1_record.html#a0f4cc96d443c3cfb94f313503032dcea":[1,0,0,33,14],
 "classcerata_1_1_record.html#a1ff3f58bf61da7c0b71fccdead213dcd":[1,0,0,33,2],
 "classcerata_1_1_record.html#a2549607f6d9e433fa26e597d0692ffc6":[1,0,0,33,11],
-"classcerata_1_1_record.html#a261a1bbb17ff5bfc7bb445d79d0c807c":[1,0,0,33,8],
-"classcerata_1_1_record.html#a35c266c03db3f1b1a2f884b0c30bcedc":[1,0,0,33,17]
+"classcerata_1_1_record.html#a261a1bbb17ff5bfc7bb445d79d0c807c":[1,0,0,33,8]
 };

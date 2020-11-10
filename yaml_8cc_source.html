@@ -154,84 +154,75 @@ $(document).ready(function(){initNavTree('yaml_8cc_source.html',''); initResizab
 <div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;        <span class="keywordflow">if</span> (node[YAML_KEY_VECTOR]) {</div>
 <div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;          force_vector_ = node[YAML_KEY_VECTOR].as&lt;<span class="keywordtype">bool</span>&gt;();</div>
 <div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;        }</div>
-<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;        <span class="keywordflow">if</span> (node[YAML_KEY_DIR]) {</div>
-<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;          <span class="keyword">auto</span> val = node[YAML_KEY_DIR].as&lt;std::string&gt;();</div>
-<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;          <span class="keywordflow">if</span> (val == YAML_VAL_KERNEL_TO_PLATFORM) {</div>
-<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;            reverse_ = <span class="keyword">true</span>;</div>
-<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;          } <span class="keywordflow">else</span> <span class="keywordflow">if</span> (val == YAML_VAL_PLATFORM_TO_KERNEL) {</div>
-<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;            reverse_ = <span class="keyword">false</span>;</div>
-<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;          } <span class="keywordflow">else</span> {</div>
-<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;            <span class="keywordflow">return</span> Status(Error::YAMLError,</div>
-<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;                          <span class="stringliteral">&quot;Field &quot;</span> + name_ + <span class="stringliteral">&quot; direction must be either &quot;</span> + std::string(YAML_VAL_PLATFORM_TO_KERNEL)</div>
-<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;                              + <span class="stringliteral">&quot; or &quot;</span> + std::string(YAML_VAL_KERNEL_TO_PLATFORM));</div>
-<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;          }</div>
-<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;        }</div>
-<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;        <span class="keywordflow">if</span> (node[YAML_KEY_FIELDS] &amp;&amp; (width_ == 0)) {</div>
-<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;          <span class="keyword">auto</span> fields = node[YAML_KEY_FIELDS];</div>
-<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;          CERATA_ROE(Visit(node[YAML_KEY_FIELDS]));</div>
-<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;        } <span class="keywordflow">else</span> <span class="keywordflow">if</span> (node[YAML_KEY_FIELDS] &amp;&amp; (width_ &gt; 0)) {</div>
-<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;          <span class="keywordflow">return</span> Status(Error::YAMLError, <span class="stringliteral">&quot;Field &quot;</span> + name_ + <span class="stringliteral">&quot; cannot have both width and subfields.&quot;</span>);</div>
-<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;        } <span class="keywordflow">else</span> <span class="keywordflow">if</span> (!node[YAML_KEY_WIDTH]) {</div>
-<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;          <span class="keywordflow">return</span> Status(Error::YAMLError, <span class="stringliteral">&quot;Field &quot;</span> + name_ + <span class="stringliteral">&quot; must have either width or subfields.&quot;</span>);</div>
-<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;        }</div>
-<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;        <span class="keywordflow">break</span>;</div>
-<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;      }</div>
-<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160; </div>
-<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;        <span class="comment">// Some nodes we should never encounter through this visitor.</span></div>
-<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;      <span class="keywordflow">case</span> YAML::NodeType::Undefined: {</div>
-<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;        <span class="keywordflow">return</span> Status(Error::YAMLError,</div>
-<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;                      <span class="stringliteral">&quot;Unexpected undefined at &quot;</span> + std::to_string(node.Mark().line) + <span class="stringliteral">&quot;:&quot;</span></div>
-<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;                          + std::to_string(node.Mark().column));</div>
-<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;      }</div>
-<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;      <span class="keywordflow">case</span> YAML::NodeType::Null: {</div>
-<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;        <span class="keywordflow">return</span> Status(Error::YAMLError, <span class="stringliteral">&quot;Unexpected null at &quot;</span> + <a class="code" href="namespacecerata.html#a566331b4acf7f5d9dbd78720f22447f8">ToString</a>(node.Mark()));</div>
-<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;      }</div>
-<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;      <span class="keywordflow">case</span> YAML::NodeType::Scalar: {</div>
-<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;        <span class="keywordflow">return</span> Status(Error::YAMLError, <span class="stringliteral">&quot;Unexpected scalar at &quot;</span> + <a class="code" href="namespacecerata.html#a566331b4acf7f5d9dbd78720f22447f8">ToString</a>(node.Mark()));</div>
-<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;      }</div>
-<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;    }</div>
-<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;  } <span class="keywordflow">catch</span> (<span class="keyword">const</span> YAML::Exception &amp;e) {</div>
-<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;    <span class="keywordflow">return</span> Status(Error::YAMLError, <span class="stringliteral">&quot;YAML parsing error: &quot;</span> + std::string(e.msg));</div>
-<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;  }</div>
-<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;  <span class="keywordflow">return</span> Status::OK();</div>
-<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;}</div>
-<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160; </div>
-<div class="line"><a name="l00110"></a><span class="lineno"><a class="line" href="classcerata_1_1yaml_1_1_yaml_converter.html#afb21135ea4decf280a0da7b0d96f2ea8">  110</a></span>&#160;<span class="keyword">auto</span> <a class="code" href="classcerata_1_1yaml_1_1_yaml_converter.html#afb21135ea4decf280a0da7b0d96f2ea8">YamlConverter::Convert</a>() -&gt; Status {</div>
-<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;  <span class="keyword">auto</span> status = Visit(root_);</div>
-<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;  <span class="keywordflow">if</span> (!status.ok()) { <span class="keywordflow">return</span> status; }</div>
-<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160; </div>
-<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;  <span class="keywordflow">if</span> (fields_.empty()) {</div>
-<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;    <span class="comment">// Check if this is to be a record, vector or just a bit.</span></div>
-<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;    <span class="keywordflow">if</span> ((width_ &gt; 1) || force_vector_) {</div>
-<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;      *out_ = <a class="code" href="namespacecerata.html#ad5b6d584c1fef19fbe45e34e87a0e7c1">cerata::field</a>(name_, <a class="code" href="namespacecerata.html#ab94f01c4617fd1008e26038f1a2ef625">cerata::vector</a>(width_), reverse_);</div>
-<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;    } <span class="keywordflow">else</span> <span class="keywordflow">if</span> (width_ &gt; 0) {</div>
-<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;      *out_ = <a class="code" href="namespacecerata.html#ad5b6d584c1fef19fbe45e34e87a0e7c1">cerata::field</a>(name_, <a class="code" href="namespacecerata.html#a23242b11c3eeeed443b99c4183dfd3df">cerata::bit</a>(name_), reverse_);</div>
-<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;    } <span class="keywordflow">else</span> {</div>
-<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;      <span class="keywordflow">return</span> Status(Error::YAMLError, <span class="stringliteral">&quot;Width for &quot;</span> + name_ + <span class="stringliteral">&quot; must be greater than 0.&quot;</span>);</div>
-<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;    }</div>
-<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;  } <span class="keywordflow">else</span> {</div>
-<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;    *out_ = <a class="code" href="namespacecerata.html#ad5b6d584c1fef19fbe45e34e87a0e7c1">cerata::field</a>(name_, <a class="code" href="namespacecerata.html#a4fc8a4ad689357b0d71c15b08860c318">cerata::record</a>(name_, {fields_}), reverse_);</div>
-<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;  }</div>
-<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;  <span class="keywordflow">return</span> Status::OK();</div>
-<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;}</div>
-<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160; </div>
-<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;}</div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;        <span class="keywordflow">if</span> (node[YAML_KEY_REVERSE]) {</div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;          reverse_ = node[YAML_KEY_REVERSE].as&lt;<span class="keywordtype">bool</span>&gt;();</div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;        }</div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;        <span class="keywordflow">if</span> (node[YAML_KEY_FIELDS] &amp;&amp; (width_ == 0)) {</div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;          <span class="keyword">auto</span> fields = node[YAML_KEY_FIELDS];</div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;          CERATA_ROE(Visit(node[YAML_KEY_FIELDS]));</div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;        } <span class="keywordflow">else</span> <span class="keywordflow">if</span> (node[YAML_KEY_FIELDS] &amp;&amp; (width_ &gt; 0)) {</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;          <span class="keywordflow">return</span> Status(Error::YAMLError, <span class="stringliteral">&quot;Field &quot;</span> + name_ + <span class="stringliteral">&quot; cannot have both width and subfields.&quot;</span>);</div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;        } <span class="keywordflow">else</span> <span class="keywordflow">if</span> (!node[YAML_KEY_WIDTH]) {</div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;          <span class="keywordflow">return</span> Status(Error::YAMLError, <span class="stringliteral">&quot;Field &quot;</span> + name_ + <span class="stringliteral">&quot; must have either width or subfields.&quot;</span>);</div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;        }</div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;        <span class="keywordflow">break</span>;</div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;      }</div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160; </div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;        <span class="comment">// Some nodes we should never encounter through this visitor.</span></div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;      <span class="keywordflow">case</span> YAML::NodeType::Undefined: {</div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;        <span class="keywordflow">return</span> Status(Error::YAMLError,</div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;                      <span class="stringliteral">&quot;Unexpected undefined at &quot;</span> + std::to_string(node.Mark().line) + <span class="stringliteral">&quot;:&quot;</span></div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;                          + std::to_string(node.Mark().column));</div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;      }</div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;      <span class="keywordflow">case</span> YAML::NodeType::Null: {</div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;        <span class="keywordflow">return</span> Status(Error::YAMLError, <span class="stringliteral">&quot;Unexpected null at &quot;</span> + <a class="code" href="namespacecerata.html#a566331b4acf7f5d9dbd78720f22447f8">ToString</a>(node.Mark()));</div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;      }</div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;      <span class="keywordflow">case</span> YAML::NodeType::Scalar: {</div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;        <span class="keywordflow">return</span> Status(Error::YAMLError, <span class="stringliteral">&quot;Unexpected scalar at &quot;</span> + <a class="code" href="namespacecerata.html#a566331b4acf7f5d9dbd78720f22447f8">ToString</a>(node.Mark()));</div>
+<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;      }</div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;    }</div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;  } <span class="keywordflow">catch</span> (<span class="keyword">const</span> YAML::Exception &amp;e) {</div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;    <span class="keywordflow">return</span> Status(Error::YAMLError, <span class="stringliteral">&quot;YAML parsing error: &quot;</span> + std::string(e.msg));</div>
+<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;  }</div>
+<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;  <span class="keywordflow">return</span> Status::OK();</div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;}</div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160; </div>
+<div class="line"><a name="l00101"></a><span class="lineno"><a class="line" href="classcerata_1_1yaml_1_1_yaml_converter.html#afb21135ea4decf280a0da7b0d96f2ea8">  101</a></span>&#160;<span class="keyword">auto</span> <a class="code" href="classcerata_1_1yaml_1_1_yaml_converter.html#afb21135ea4decf280a0da7b0d96f2ea8">YamlConverter::Convert</a>() -&gt; Status {</div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;  <span class="keyword">auto</span> status = Visit(root_);</div>
+<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;  <span class="keywordflow">if</span> (!status.ok()) { <span class="keywordflow">return</span> status; }</div>
+<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160; </div>
+<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;  <span class="keywordflow">if</span> (fields_.empty()) {</div>
+<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;    <span class="comment">// Check if this is to be a record, vector or just a bit.</span></div>
+<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;    <span class="keywordflow">if</span> ((width_ &gt; 1) || force_vector_) {</div>
+<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;      *out_ = <a class="code" href="namespacecerata.html#ad5b6d584c1fef19fbe45e34e87a0e7c1">cerata::field</a>(name_, <a class="code" href="namespacecerata.html#ab94f01c4617fd1008e26038f1a2ef625">cerata::vector</a>(width_), reverse_);</div>
+<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;    } <span class="keywordflow">else</span> <span class="keywordflow">if</span> (width_ &gt; 0) {</div>
+<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;      *out_ = <a class="code" href="namespacecerata.html#ad5b6d584c1fef19fbe45e34e87a0e7c1">cerata::field</a>(name_, <a class="code" href="namespacecerata.html#a23242b11c3eeeed443b99c4183dfd3df">cerata::bit</a>(name_), reverse_);</div>
+<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;    } <span class="keywordflow">else</span> {</div>
+<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;      <span class="keywordflow">return</span> Status(Error::YAMLError, <span class="stringliteral">&quot;Width for &quot;</span> + name_ + <span class="stringliteral">&quot; must be greater than 0.&quot;</span>);</div>
+<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;    }</div>
+<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;  } <span class="keywordflow">else</span> {</div>
+<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;    *out_ = <a class="code" href="namespacecerata.html#ad5b6d584c1fef19fbe45e34e87a0e7c1">cerata::field</a>(name_, <a class="code" href="namespacecerata.html#a4fc8a4ad689357b0d71c15b08860c318">cerata::record</a>(name_, {fields_}), reverse_);</div>
+<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;  }</div>
+<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;  <span class="keywordflow">return</span> Status::OK();</div>
+<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;}</div>
+<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160; </div>
+<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;}</div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 <div class="ttc" id="anamespacecerata_html_ad5b6d584c1fef19fbe45e34e87a0e7c1"><div class="ttname"><a href="namespacecerata.html#ad5b6d584c1fef19fbe45e34e87a0e7c1">cerata::field</a></div><div class="ttdeci">std::shared_ptr&lt; Field &gt; field(const std::string &amp;name, const std::shared_ptr&lt; Type &gt; &amp;type, bool reverse, bool sep)</div><div class="ttdoc">Create a new RecordField, and return a shared pointer to it.</div><div class="ttdef"><b>Definition:</b> <a href="type_8cc_source.html#l00273">type.cc:273</a></div></div>
 <div class="ttc" id="aclasscerata_1_1yaml_1_1_yaml_converter_html_a8aa88f1f2268438ed9f5ffd79e3189e4"><div class="ttname"><a href="classcerata_1_1yaml_1_1_yaml_converter.html#a8aa88f1f2268438ed9f5ffd79e3189e4">cerata::yaml::YamlConverter::Visit</a></div><div class="ttdeci">auto Visit(const YAML::Node &amp;node) -&gt; Status</div><div class="ttdoc">Visit a YAML node.</div><div class="ttdef"><b>Definition:</b> <a href="yaml_8cc_source.html#l00037">yaml.cc:37</a></div></div>
 <div class="ttc" id="aclasscerata_1_1yaml_1_1_yaml_converter_html_a113cc23b3a39fc7568a190a6ae4a1905"><div class="ttname"><a href="classcerata_1_1yaml_1_1_yaml_converter.html#a113cc23b3a39fc7568a190a6ae4a1905">cerata::yaml::YamlConverter::YamlConverter</a></div><div class="ttdeci">YamlConverter(const std::string &amp;yaml, std::shared_ptr&lt; cerata::Field &gt; *out)</div><div class="ttdoc">Construct a new YAML converter.</div><div class="ttdef"><b>Definition:</b> <a href="yaml_8cc_source.html#l00022">yaml.cc:22</a></div></div>
 <div class="ttc" id="anamespacecerata_html_a566331b4acf7f5d9dbd78720f22447f8"><div class="ttname"><a href="namespacecerata.html#a566331b4acf7f5d9dbd78720f22447f8">cerata::ToString</a></div><div class="ttdeci">std::string ToString(Expression::Op operation)</div><div class="ttdoc">Human-readable expression operator.</div><div class="ttdef"><b>Definition:</b> <a href="expression_8cc_source.html#l00149">expression.cc:149</a></div></div>
-<div class="ttc" id="aclasscerata_1_1yaml_1_1_yaml_converter_html_afb21135ea4decf280a0da7b0d96f2ea8"><div class="ttname"><a href="classcerata_1_1yaml_1_1_yaml_converter.html#afb21135ea4decf280a0da7b0d96f2ea8">cerata::yaml::YamlConverter::Convert</a></div><div class="ttdeci">auto Convert() -&gt; Status</div><div class="ttdoc">Attempt to convert the YAML to a field.</div><div class="ttdef"><b>Definition:</b> <a href="yaml_8cc_source.html#l00110">yaml.cc:110</a></div></div>
+<div class="ttc" id="aclasscerata_1_1yaml_1_1_yaml_converter_html_afb21135ea4decf280a0da7b0d96f2ea8"><div class="ttname"><a href="classcerata_1_1yaml_1_1_yaml_converter.html#afb21135ea4decf280a0da7b0d96f2ea8">cerata::yaml::YamlConverter::Convert</a></div><div class="ttdeci">auto Convert() -&gt; Status</div><div class="ttdoc">Attempt to convert the YAML to a field.</div><div class="ttdef"><b>Definition:</b> <a href="yaml_8cc_source.html#l00101">yaml.cc:101</a></div></div>
 <div class="ttc" id="anamespacecerata_html_ab94f01c4617fd1008e26038f1a2ef625"><div class="ttname"><a href="namespacecerata.html#ab94f01c4617fd1008e26038f1a2ef625">cerata::vector</a></div><div class="ttdeci">std::shared_ptr&lt; Type &gt; vector(const std::string &amp;name, const std::shared_ptr&lt; Node &gt; &amp;width)</div><div class="ttdoc">Create a new vector type, and return a shared pointer to it.</div><div class="ttdef"><b>Definition:</b> <a href="type_8cc_source.html#l00193">type.cc:193</a></div></div>
 <div class="ttc" id="anamespacecerata_html_a4fc8a4ad689357b0d71c15b08860c318"><div class="ttname"><a href="namespacecerata.html#a4fc8a4ad689357b0d71c15b08860c318">cerata::record</a></div><div class="ttdeci">std::shared_ptr&lt; Record &gt; record(const std::string &amp;name, const std::vector&lt; std::shared_ptr&lt; Field &gt;&gt; &amp;fields)</div><div class="ttdoc">Create a new Record type, and return a shared pointer to it.</div><div class="ttdef"><b>Definition:</b> <a href="type_8cc_source.html#l00308">type.cc:308</a></div></div>
-<div class="ttc" id="aclasscerata_1_1yaml_1_1_yaml_converter_html"><div class="ttname"><a href="classcerata_1_1yaml_1_1_yaml_converter.html">cerata::yaml::YamlConverter</a></div><div class="ttdoc">Converts YAMLs to Cerata types.</div><div class="ttdef"><b>Definition:</b> <a href="yaml_8h_source.html#l00038">yaml.h:38</a></div></div>
+<div class="ttc" id="aclasscerata_1_1yaml_1_1_yaml_converter_html"><div class="ttname"><a href="classcerata_1_1yaml_1_1_yaml_converter.html">cerata::yaml::YamlConverter</a></div><div class="ttdoc">Converts YAMLs to Cerata types.</div><div class="ttdef"><b>Definition:</b> <a href="yaml_8h_source.html#l00036">yaml.h:36</a></div></div>
 <div class="ttc" id="anamespacecerata_html_a23242b11c3eeeed443b99c4183dfd3df"><div class="ttname"><a href="namespacecerata.html#a23242b11c3eeeed443b99c4183dfd3df">cerata::bit</a></div><div class="ttdeci">std::shared_ptr&lt; Type &gt; bit(const std::string &amp;name)</div><div class="ttdoc">Return a static bit type.</div><div class="ttdef"><b>Definition:</b> <a href="type_8cc_source.html#l00240">type.cc:240</a></div></div>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a class="el" href="dir_d693b6a5dfcef49756eb42a0c06c09ce.html">cerata</a></li><li class="navelem"><a class="el" href="dir_12687f395ed5ea6774d80572d705060d.html">yaml</a></li><li class="navelem"><b>yaml.cc</b></li>
-    <li class="footer">Generated on Tue Nov 10 2020 09:55:57 for Cerata by <a href="http://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.8.20 </li>
+    <li class="footer">Generated on Tue Nov 10 2020 12:46:19 for Cerata by <a href="http://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.8.20 </li>
   </ul>
 </div>
 </body>

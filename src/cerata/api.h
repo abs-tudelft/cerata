@@ -28,6 +28,7 @@
 #include "cerata/parameter.h"
 #include "cerata/pool.h"
 #include "cerata/port.h"
+#include "cerata/status.h"
 #include "cerata/stream.h"
 #include "cerata/transform.h"
 #include "cerata/type.h"
@@ -36,9 +37,10 @@
 #include "cerata/logging.h"
 #include "cerata/utils.h"
 
-// Cerata back-ends
+// Cerata modules
 #include "cerata/dot/dot.h"
 #include "cerata/vhdl/vhdl.h"
+#include "cerata/yaml/yaml.h"
 
 /// Contains every Cerata class, function, etc...
 namespace cerata {}

@@ -256,13 +256,13 @@ std::shared_ptr<Type> vector(std::string name, unsigned int width);
 class Field : public Named, public std::enable_shared_from_this<Field> {
  public:
   /// @brief RecordField constructor.
-  Field(std::string name, std::shared_ptr<Type> type, bool invert = false, bool sep = true);
+  Field(std::string name, std::shared_ptr<Type> type, bool reverse = false, bool sep = true);
   /// @brief Change the type of this field.
   Field &SetType(std::shared_ptr<Type> type);
   /// @brief Return the type of the RecordField.
   std::shared_ptr<Type> type() const { return type_; }
   /// @brief Return if this individual field should be reversed w.r.t. parent Record type itself on graph edges.
-  bool reversed() const { return invert_; }
+  bool reversed() const { return reverse_; }
   /// @brief Reverse the direction of this field and return itself.
   std::shared_ptr<Field> Reverse();
   /// @brief Return true if in name generation of this field name for flattened types a separator should be placed.
@@ -280,7 +280,7 @@ class Field : public Named, public std::enable_shared_from_this<Field> {
   /// The type of the field.
   std::shared_ptr<Type> type_;
   /// Whether this field should be inverted in directed use of the parent type.
-  bool invert_;
+  bool reverse_;
   /// Whether this field should generate a separator for name/identifier generation in downstream tools.
   bool sep_;
 };
@@ -288,11 +288,11 @@ class Field : public Named, public std::enable_shared_from_this<Field> {
 /// @brief Create a new RecordField, and return a shared pointer to it.
 std::shared_ptr<Field> field(const std::string &name,
                              const std::shared_ptr<Type> &type,
-                             bool invert = false,
+                             bool reverse = false,
                              bool sep = true);
 
 /// @brief Create a new RecordField, and return a shared pointer to it. The name will be taken from the type.
-std::shared_ptr<Field> field(const std::shared_ptr<Type> &type, bool invert = false, bool sep = true);
+std::shared_ptr<Field> field(const std::shared_ptr<Type> &type, bool reverse = false, bool sep = true);
 
 /// @brief Convenience function to disable the separator for a record field.
 std::shared_ptr<Field> NoSep(std::shared_ptr<Field> field);

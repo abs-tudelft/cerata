@@ -14,6 +14,8 @@
 
 #include <gmock/gmock.h>
 #include <cerata/api.h>
+#include <cerata/vhdl/vhdl.h>
+
 #include "cerata/test_designs.h"
 #include "cerata/test_utils.h"
 

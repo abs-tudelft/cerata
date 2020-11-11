@@ -14,6 +14,7 @@
 
 #include <gtest/gtest.h>
 #include <cerata/api.h>
+#include <cerata/dot/dot.h>
 
 #include "cerata/test_designs.h"
 

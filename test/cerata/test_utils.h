@@ -15,6 +15,8 @@
 #pragma once
 
 #include <cerata/api.h>
+#include <cerata/dot/dot.h>
+#include <cerata/vhdl/vhdl.h>
 #include <iostream>
 #include <utility>
 #include <memory>

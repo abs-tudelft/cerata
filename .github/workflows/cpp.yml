@@ -9,12 +9,9 @@ on:
 jobs:
   test:
     name: Test
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - name: Install yaml-cpp
-      run: |
-        sudo apt install -y libyaml-cpp-dev
     - name: Install CMake
       run: |
         mkdir -p $HOME/cmake

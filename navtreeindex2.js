@@ -1,6 +1,5 @@
 var NAVTREEINDEX2 =
 {
-"structcerata_1_1_bit.html#a89e48b3855df6349d60194137bdcb6ad":[1,0,0,3,2],
 "structcerata_1_1_bit.html#af5512515e5693b7b4938f56a3d5a7cbb":[1,0,0,3,4],
 "structcerata_1_1_boolean.html":[1,0,0,4],
 "structcerata_1_1_boolean.html#a3e6e0f34f812d08f13826a919ccd785b":[1,0,0,4,0],
@@ -234,5 +233,6 @@ var NAVTREEINDEX2 =
 "vhdl__types_8cc_source.html":[2,0,0,0,1,19],
 "vhdl__types_8h_source.html":[2,0,0,0,1,20],
 "yaml_8cc_source.html":[2,0,0,0,2,0],
-"yaml_8h_source.html":[2,0,0,0,2,1]
+"yaml_8h_source.html":[2,0,0,0,2,1],
+"":[1,0,0,2]
 };

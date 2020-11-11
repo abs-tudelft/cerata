@@ -37,10 +37,5 @@
 #include "cerata/logging.h"
 #include "cerata/utils.h"
 
-// Cerata modules
-#include "cerata/dot/dot.h"
-#include "cerata/vhdl/vhdl.h"
-#include "cerata/yaml/yaml.h"
-
 /// Contains every Cerata class, function, etc...
 namespace cerata {}

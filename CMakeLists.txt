@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
-project(cerata VERSION 0.0.10 LANGUAGES CXX)
+project(cerata VERSION 0.0.11 LANGUAGES CXX)
 
 include(FetchContent)
 

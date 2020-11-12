@@ -118,6 +118,7 @@ if(BUILD_CERATA_YAML)
     FetchContent_Populate(yaml)
     set(YAML_CPP_BUILD_TESTS OFF CACHE INTERNAL "")
     add_subdirectory(${yaml_SOURCE_DIR} ${yaml_BINARY_DIR})
+    set_property(TARGET yaml-cpp PROPERTY POSITION_INDEPENDENT_CODE ON)
   endif()
 
   add_compile_unit(

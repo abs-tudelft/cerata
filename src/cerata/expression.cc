@@ -26,14 +26,16 @@ static std::string ToString(Node *n) {
   return ss.str();
 }
 
-static std::string ToString(const std::shared_ptr<Node>& n) {
+static std::string ToString(const std::shared_ptr<Node> &n) {
   std::stringstream ss;
   ss << n;
   return ss.str();
 }
 
-std::shared_ptr<Expression> Expression::Make(Op op, std::shared_ptr<Node> lhs, std::shared_ptr<Node> rhs) {
-  auto e = new Expression(op, std::move(lhs), std::move(rhs));
+std::shared_ptr<Expression> Expression::Make(Op op,
+                                             std::shared_ptr<Node> lhs,
+                                             std::shared_ptr<Node> rhs) {
+  auto *e = new Expression(op, std::move(lhs), std::move(rhs));
   auto result = std::shared_ptr<Expression>(e);
   if (e->parent()) {
     e->parent().value()->Add(result);
@@ -42,31 +44,35 @@ std::shared_ptr<Expression> Expression::Make(Op op, std::shared_ptr<Node> lhs, s
 }
 
 // Hash the the node pointers into a short string.
-static std::string GenerateName(Expression *expr, std::shared_ptr<Node> lhs, std::shared_ptr<Node> rhs) {
-  auto l = ::cerata::ToString(std::move(lhs));
+static std::string GenerateName(Expression *expr,
+                                const std::shared_ptr<Node> &lhs,
+                                const std::shared_ptr<Node> &rhs) {
+  auto l = ::cerata::ToString(lhs);
   auto e = ::cerata::ToString(expr);
-  auto r = ::cerata::ToString(std::move(rhs));
+  auto r = ::cerata::ToString(rhs);
   std::string result = "Expr_" + l + e + r;
   return result;
 }
 
-Expression::Expression(Expression::Op op, std::shared_ptr<Node> lhs, std::shared_ptr<Node> rhs)
+Expression::Expression(Expression::Op op,
+                       std::shared_ptr<Node> lhs,
+                       std::shared_ptr<Node> rhs)
     : MultiOutputNode(GenerateName(this, lhs, rhs), NodeID::EXPRESSION, string()),
       operation_(op),
       lhs_(std::move(lhs)),
       rhs_(std::move(rhs)) {
   if (lhs_->parent() && rhs_->parent()) {
-    auto lp = *lhs_->parent();
-    auto rp = *rhs_->parent();
+    auto *lp = *lhs_->parent();
+    auto *rp = *rhs_->parent();
     if (lp != rp) {
       CERATA_LOG(ERROR, "Can only generate expressions between nodes on same parent.");
     }
   }
   if (lhs_->parent()) {
-    auto lp = *lhs_->parent();
+    auto *lp = *lhs_->parent();
     SetParent(lp);
   } else if (rhs_->parent()) {
-    auto rp = *rhs_->parent();
+    auto *rp = *rhs_->parent();
     SetParent(rp);
   }
 }
@@ -128,7 +134,8 @@ std::shared_ptr<Node> Expression::Minimize(Node *node) {
     auto min_lhs = Minimize(expr->lhs());
     auto min_rhs = Minimize(expr->rhs());
 
-    // If minimization took place in either node, create a new expression with the minimized nodes.
+    // If minimization took place in either node, create a new expression with the
+    // minimized nodes.
     if ((min_lhs != expr->lhs_) || (min_rhs != expr->rhs_)) {
       expr = Expression::Make(expr->operation_, min_lhs, min_rhs);
     }
@@ -175,7 +182,9 @@ std::shared_ptr<Object> Expression::Copy() const {
                           std::dynamic_pointer_cast<Node>(rhs_->Copy()));
 }
 
-Node *Expression::CopyOnto(Graph *dst, const std::string &name, NodeMap *rebinding) const {
+Node *Expression::CopyOnto(Graph *dst,
+                           const std::string &name,
+                           NodeMap *rebinding) const {
   auto new_lhs = this->lhs_;
   auto new_rhs = this->rhs_;
   ImplicitlyRebindNodes(dst, {lhs_.get(), rhs_.get()}, rebinding);

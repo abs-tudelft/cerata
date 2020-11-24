@@ -15,8 +15,8 @@
 #pragma once
 
 #include <cerata/api.h>
-#include <cerata/dot/dot.h>
-#include <cerata/vhdl/vhdl.h>
+#include <cerata/dot/api.h>
+#include <cerata/vhdl/api.h>
 #include <iostream>
 #include <utility>
 #include <memory>
@@ -38,14 +38,15 @@ inline std::string GenerateDebugOutput(Component *comp, std::string name = "") {
   std::cout << "VHDL SOURCE:\n";
   std::cout << src << std::endl;
 
-  dot::Grapher dot;
+  dot::GraphGenerator dot;
   dot.style.config = dot::Config::all();
   dot.GenFile(*comp, name);
 
   return src;
 }
 
-inline std::string GenerateDebugOutput(const std::shared_ptr<cerata::Component>& comp, std::string name = "") {
+inline std::string GenerateDebugOutput(const std::shared_ptr<cerata::Component> &comp,
+                                       std::string name = "") {
   return GenerateDebugOutput(comp.get(), std::move(name));
 }
 

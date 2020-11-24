@@ -31,24 +31,29 @@ class Type;
 class Component;
 
 /**
- * @brief A pool to share ownership of objects.
+ * \brief A pool to share ownership of objects.
  *
- * Useful if these objects that are often used (e.g. integer literals), to be able to prevent unnecessary duplicates.
+ * Useful if these objects that are often used (e.g. integer literals),
+ * to be able to prevent unnecessary duplicates.
+ *
+ * Also useful to globally access stuff.
  */
 template<typename T>
 class Pool {
  public:
-  /// @brief Add an object to the pool, taking shared ownership. Object may not already exist in the pool.
+  /// \brief Add an object to the pool, taking shared ownership.
   void Add(const std::shared_ptr<T> &object) {
     for (const auto &existing_object : objects_) {
       if (existing_object->name() == object->name()) {
-        CERATA_LOG(FATAL, "Object " + PoolTypeToString(*existing_object) + " already exists in pool.");
+        CERATA_LOG(FATAL,
+                   "Object " + PoolTypeToString(*existing_object)
+                       + " already exists in pool.");
       }
     }
     objects_.push_back(object);
   }
 
-  /// @brief Retrieve a component from the pool by name, if it exists. Returns empty option otherwise.
+  /// \brief Retrieve a component from the pool by name, if it exists.
   std::optional<T *> Get(const std::string &name) {
     // Check for potential duplicate
     for (const auto &existing_object : objects_) {
@@ -59,7 +64,7 @@ class Pool {
     return std::nullopt;
   }
 
-  /// @brief Release ownership of all components.
+  /// \brief Release ownership of all components.
   void Clear() {
     objects_.clear();
   }
@@ -70,9 +75,9 @@ class Pool {
 
  private:
   /**
-   * @brief Returns a human-readable representation of an object stored in a pool.
-   * @param object  The object itself.
-   * @return        A human-readable string.
+   * \brief Returns a human-readable representation of an object stored in a pool.
+   * \param object  The object itself.
+   * \return        A human-readable string.
    */
   std::string PoolTypeToString(const T &object) {
     return object.ToString();
@@ -85,26 +90,26 @@ class TypePool : public Pool<Type> {};
 /// A pool of Components.
 class ComponentPool : public Pool<Component> {};
 
-/// @brief Return a global default TypePool.
+/// \brief Return a global default TypePool.
 inline TypePool *default_type_pool() {
   static TypePool pool;
   return &pool;
 }
 
-/// @brief Return a global default component pool.
+/// \brief Return a global default component pool.
 inline ComponentPool *default_component_pool() {
   static ComponentPool pool;
   return &pool;
 }
 
 /**
- * @brief A pool of nodes.
+ * \brief A pool of nodes.
  *
  * Useful to prevent duplicates of literal nodes.
  */
 class NodePool : public Pool<Node> {
  public:
-  /// @brief Obtain a literal node of raw storage type LitType with some value.
+  /// \brief Obtain a literal node of raw storage type LitType with some value.
   template<typename LitType>
   std::shared_ptr<Literal> GetLiteral(LitType value) {
     // Attempt to find and return an already existing literal
@@ -126,9 +131,7 @@ class NodePool : public Pool<Node> {
   }
 };
 
-/**
- * @brief Return a global default node pool that can store nodes without being owned by a graph.
- */
+/// Return a global default node pool that can store nodes without being owned by a graph.
 inline NodePool *default_node_pool() {
   static NodePool pool;
   return &pool;
@@ -136,23 +139,25 @@ inline NodePool *default_node_pool() {
 
 // Convenience functions for fast access to literals in the default node pool.
 
-/// @brief Obtain a raw pointer to an integer literal from the default node pool.
+/// \brief Obtain a raw pointer to an integer literal from the default node pool.
 inline Literal *rintl(int64_t i) {
   return default_node_pool()->GetLiteral(i).get();
 }
-/// @brief Obtain a shared pointer to an integer literal from the default node pool.
+/// \brief Obtain a shared pointer to an integer literal from the default node pool.
 inline std::shared_ptr<Literal> intl(int64_t i) {
   return default_node_pool()->GetLiteral(i);
 }
 
-/// @brief Obtain a raw pointer to a string literal from the default node pool.
-inline Literal *rstrl(std::string str) { return default_node_pool()->GetLiteral<std::string>(std::move(str)).get(); }
-/// @brief Obtain a shared pointer to a string literal from the default node pool.
+/// \brief Obtain a raw pointer to a string literal from the default node pool.
+inline Literal *rstrl(std::string str) {
+  return default_node_pool()->GetLiteral<std::string>(std::move(str)).get();
+}
+/// \brief Obtain a shared pointer to a string literal from the default node pool.
 inline std::shared_ptr<Literal> strl(std::string str) {
   return default_node_pool()->GetLiteral<std::string>(std::move(str));
 }
 
-/// @brief Return a literal node representing a Boolean.
+/// \brief Return a literal node representing a Boolean.
 inline std::shared_ptr<Literal> booll(bool value) {
   return default_node_pool()->GetLiteral<bool>(value);
 }

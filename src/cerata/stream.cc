@@ -61,7 +61,8 @@ std::shared_ptr<Stream> stream(const std::string &name,
   return std::make_shared<Stream>(name, element_name, element_type, control);
 }
 
-std::shared_ptr<Stream> stream(const std::string &element_name, const std::shared_ptr<Type> &element_type) {
+std::shared_ptr<Stream> stream(const std::string &element_name,
+                               const std::shared_ptr<Type> &element_type) {
   return stream(element_name + "_stream", element_name, element_type);
 }
 

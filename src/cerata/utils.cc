@@ -12,11 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "cerata/utils.h"
-
 #include <unordered_map>
 #include <string>
+#include <filesystem>
 
+#include "cerata/errors.h"
+#include "cerata/utils.h"
 #include "cerata/logging.h"
 #include "cerata_config/config.h"
 
@@ -49,17 +50,14 @@ std::string ToString(const std::unordered_map<std::string, std::string> &meta) {
   return result;
 }
 
-void CreateDir(const std::string &dir_name) {
-  // TODO(johanpel): Create directories in a portable manner, or just wait for <filesystem>
-  int ret = system(("mkdir -p " + dir_name).c_str());
-  if (ret == -1) {
-    CERATA_LOG(ERROR, "Could not create directory.");
+Status CreateDir(const std::filesystem::path &path) {
+  try {
+    std::filesystem::create_directories(path);
+  } catch (std::filesystem::filesystem_error &e) {
+    return Status(Err::IO, e.what());
   }
-}
 
-bool FileExists(const std::string &name) {
-  std::ifstream f(name.c_str());
-  return f.good();
+  return Status::OK();
 }
 
 std::string version() {

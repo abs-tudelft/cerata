@@ -28,17 +28,17 @@ std::string Literal::ToString() const {
 }
 
 #ifndef LITERAL_IMPL_FACTORY
-#define LITERAL_IMPL_FACTORY(NAME, BASETYPE, IDNAME, TYPENAME)                                                       \
-  Literal::Literal(std::string name, const std::shared_ptr<Type> &type, TYPENAME value) \
-    : MultiOutputNode(std::move(name), Node::NodeID::LITERAL, type), \
-      storage_type_(StorageType::IDNAME), \
-      NAME##_val_(std::move(value)) {} \
-      \
-  std::shared_ptr<Literal> Literal::Make##NAME(TYPENAME value) {  \
-  std::stringstream str;  \
-  str << #NAME << "_" << value; \
-  auto ret = std::make_shared<Literal>(str.str(), BASETYPE(), value); \
-  return ret; \
+#define LITERAL_IMPL_FACTORY(NAME, BASETYPE, IDNAME, TYPENAME)                           \
+  Literal::Literal(std::string name, const std::shared_ptr<Type> &type, TYPENAME value)  \
+    : MultiOutputNode(std::move(name), Node::NodeID::LITERAL, type),                     \
+      storage_type_(StorageType::IDNAME),                                                \
+      NAME##_val_(std::move(value)) {}                                                   \
+                                                                                         \
+  std::shared_ptr<Literal> Literal::Make##NAME(TYPENAME value) {                         \
+  std::stringstream str;                                                                 \
+  str << #NAME << "_" << value;                                                          \
+  auto ret = std::make_shared<Literal>(str.str(), BASETYPE(), value);                    \
+  return ret;                                                                            \
 }
 #endif
 

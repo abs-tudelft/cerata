@@ -36,17 +36,21 @@ constexpr LogLevel CERATA_LOG_FATAL = 3;     ///< Fatal level; tool should exit.
 class Logger {
  public:
   /// Signature of the callback function.
-  using CallbackSignature = void(LogLevel, const std::string &, char const *, char const *, int);
+  using CallbackSignature = void(LogLevel,
+                                 const std::string &,
+                                 char const *,
+                                 char const *,
+                                 int);
 
-  /// @brief Enable the logger. Can only be done after the callback function was set.
+  /// \brief Enable the logger. Can only be done after the callback function was set.
   inline void enable(std::function<CallbackSignature> callback) {
     callback_ = std::move(callback);
   }
 
-  /// @brief Return true if callback was set, false otherwise.
+  /// \brief Return true if callback was set, false otherwise.
   inline bool IsEnabled() { return callback_ ? true : false; }
 
-  /// @brief Write something using the logging callback function.
+  /// \brief Write something using the logging callback function.
   inline void write(LogLevel level,
                     std::string const &message,
                     char const *source_function,
@@ -58,8 +62,9 @@ class Logger {
   }
 
  private:
-  /// @brief Callback function for Cerata logging
-  std::function<void(LogLevel, const std::string &, char const *, char const *, int)> callback_;
+  /// \brief Callback function for Cerata logging
+  std::function<void(LogLevel, const std::string &, char const *, char const *, int)>
+      callback_;
 };
 
 /// Return the global Cerata logger.
@@ -68,7 +73,6 @@ inline Logger &logger() {
   return l;
 }
 
-// TODO(johanpel): do we want to throw or exit some other way? For debugging, this is quite handy.
 #define CERATA_LOG(level, msg) \
 if (CERATA_LOG_##level > CERATA_LOG_WARNING) { \
   throw std::runtime_error(std::string(__FILE__) + ":" \

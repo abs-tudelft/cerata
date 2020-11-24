@@ -14,7 +14,6 @@
 
 #include "cerata/vhdl/template.h"
 
-#include <sstream>
 #include <iostream>
 #include "cerata/logging.h"
 
@@ -88,7 +87,7 @@ void Template::Analyze() {
       std::smatch match = *i;
       std::string match_string = match.str();
       std::string replace_string = match_string.substr(2, match_string.length() - 3);
-      trloc loc(trloc(line_num, static_cast<size_t>(match.position(0))));
+      ReplaceLoc loc(ReplaceLoc(line_num, static_cast<size_t>(match.position(0))));
       replace_list_[replace_string].push_back(loc);
     }
 

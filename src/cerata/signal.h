@@ -23,26 +23,38 @@
 namespace cerata {
 
 /**
- * @brief A Signal Node.
+ * \brief A Signal Node.
  *
  * A Signal Node can have a single input and multiple outputs.
  */
 class Signal : public NormalNode, public Synchronous {
  public:
-  /// @brief Signal constructor.
-  Signal(std::string name, std::shared_ptr<Type> type, std::shared_ptr<ClockDomain> domain = default_domain());
-  /// @brief Create a copy of this Signal.
+  /// \brief Signal constructor.
+  Signal(std::string name,
+         std::shared_ptr<Type> type,
+         std::shared_ptr<ClockDomain> domain = default_domain());
+  /// \brief Create a copy of this Signal.
   std::shared_ptr<Object> Copy() const override;
 
   std::string ToString() const override;
 };
 
-/// @brief Create a new Signal and return a smart pointer to it.
-std::shared_ptr<Signal> signal(const std::string &name,
-                               const std::shared_ptr<Type> &type,
-                               const std::shared_ptr<ClockDomain> &domain = default_domain());
-/// @brief Create a new Signal and return a smart pointer to it. The Signal name is derived from the Type name.
-std::shared_ptr<Signal> signal(const std::shared_ptr<Type> &type,
-                               const std::shared_ptr<ClockDomain> &domain = default_domain());
+/// \brief Create a new Signal and return a smart pointer to it.
+std::shared_ptr<Signal> signal(
+    const std::string &name,
+    const std::shared_ptr<Type> &type,
+    const std::shared_ptr<ClockDomain> &domain = default_domain());
+/**
+ * \brief Create a new Signal and return a smart pointer to it.
+ *
+ * The Signal name is derived from the Type name.
+ *
+ * \param type The type of the signal.
+ * \param domain The clock domain of the signal.
+ * \return A shared ptr to the constructed signal.
+ */
+std::shared_ptr<Signal> signal(
+    const std::shared_ptr<Type> &type,
+    const std::shared_ptr<ClockDomain> &domain = default_domain());
 
 }  // namespace cerata

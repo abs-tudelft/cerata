@@ -14,7 +14,7 @@
 
 #include <gmock/gmock.h>
 #include <cerata/api.h>
-#include <cerata/vhdl/vhdl.h>
+#include <cerata/vhdl/api.h>
 
 #include "cerata/test_designs.h"
 #include "cerata/test_utils.h"
@@ -56,7 +56,7 @@ TEST(VHDL_INST, ArrayTypeMapper) {
 
   // Array component
   auto parSize = parameter("ARRAY_SIZE", integer(), intl(0));
-  auto pA = port_array("A", tA, parSize, Port::OUT);
+  auto pA = PortArray::Make("A", tA, parSize, Port::OUT).value();
   auto x_comp = component("X", {parSize, pA});
 
   // Ports
@@ -64,7 +64,7 @@ TEST(VHDL_INST, ArrayTypeMapper) {
   auto pC = port("C", tB, Port::OUT);
   // Components and instantiations
   auto top = component("top", {pB, pC});
-  auto x = top->Instantiate(x_comp);
+  auto *x = top->Instantiate(x_comp);
 
   // Drive B and C from A
   pB <<= x->prt_arr("A")->Append();
@@ -151,8 +151,9 @@ TEST(VHDL_INST, NonLocallyStaticArrayMap) {
   auto child_in_size = parameter("OUT_SIZE", integer());
   auto child_width = parameter("WIDTH", integer());
   auto child_vec = vector("VecType", child_width);
-  auto child_po = port_array("po", child_vec, child_out_size, Port::Dir::OUT);
-  auto child_pi = port_array("pi", child_vec, child_in_size, Port::Dir::IN);
+  auto
+      child_po = PortArray::Make("po", child_vec, child_out_size, Port::Dir::OUT).value();
+  auto child_pi = PortArray::Make("pi", child_vec, child_in_size, Port::Dir::IN).value();
   auto child = component("child", {child_width,
                                    child_in_size,
                                    child_out_size,
@@ -166,7 +167,7 @@ TEST(VHDL_INST, NonLocallyStaticArrayMap) {
   auto top_po0 = port("po0", top_vec, Port::Dir::OUT);
   auto top_po1 = port("po1", top_vec, Port::Dir::OUT);
   auto top = component("top", {top_width, top_pi0, top_pi1, top_po0, top_po1});
-  auto child_inst = top->Instantiate(child.get());
+  auto *child_inst = top->Instantiate(child.get());
 
   Connect(child_inst->par("WIDTH"), top_width);
   Connect(top_po0, child_inst->prt_arr("po")->Append());

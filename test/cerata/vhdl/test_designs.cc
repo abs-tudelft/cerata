@@ -14,8 +14,8 @@
 
 #include <gmock/gmock.h>
 #include <cerata/api.h>
-#include <cerata/vhdl/vhdl.h>
-#include <cerata/dot/dot.h>
+#include <cerata/vhdl/api.h>
+#include <cerata/dot/api.h>
 #include <string>
 
 #include "cerata/test_utils.h"
@@ -282,7 +282,7 @@ TEST(VHDL_DESIGN, ExprGenericInArray) {
 
   auto cpar = parameter("child_width", 2);
   auto csize = parameter("size", 0);
-  auto cprt = port_array("arr", vector(cpar), csize, Port::IN);
+  auto cprt = PortArray::Make("arr", vector(cpar), csize, Port::IN).value();
   auto ctop = component("child", {cpar, csize, cprt});
 
   auto inst = top->Instantiate(ctop);
@@ -342,7 +342,7 @@ TEST(VHDL_DESIGN, Example) {
   default_component_pool()->Clear();
   auto top = GetExampleDesign();
 
-  dot::Grapher dot;
+  dot::GraphGenerator dot;
   dot.style.config = dot::Config::all();
   dot.GenFile(*top, "Example.dot");
 
@@ -353,7 +353,7 @@ TEST(VHDL_DESIGN, Example2) {
   default_component_pool()->Clear();
   auto top = GetExampleDesign2();
 
-  dot::Grapher dot;
+  dot::GraphGenerator dot;
   dot.GenFile(*top, "Example.dot");
 
   GenerateDebugOutput(top);

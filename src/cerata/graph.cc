@@ -12,12 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "cerata/graph.h"
-
 #include <string>
 #include <memory>
 #include <map>
 
+#include "cerata/graph.h"
 #include "cerata/utils.h"
 #include "cerata/node.h"
 #include "cerata/logging.h"
@@ -26,25 +25,30 @@
 #include "cerata/edge.h"
 #include "cerata/parameter.h"
 #include "cerata/expression.h"
+#include "cerata/errors.h"
 
 namespace cerata {
 
-Graph &Graph::Add(const std::shared_ptr<Object> &object) {
+Status Graph::Add(const std::shared_ptr<Object> &object) {
   // Check for duplicates in name / ownership
   for (const auto &o : objects_) {
     if (o->name() == object->name()) {
       if (o.get() == object.get()) {
         // Graph already owns object. We can skip adding.
-        return *this;
       } else {
-        CERATA_LOG(ERROR, "Graph " + name() + " already contains an object with name " + object->name());
+        return Status(Err::Graph,
+                      "Graph " + name() + " already contains an object with name "
+                          + object->name());
       }
     }
   }
 
-  // Check if it already has a parent. At this point we may want to move to unique ptrs to objects.
+  // Check if it already has a parent. At this point we may want to move to unique ptrs
+  // to objects.
   if (object->parent() && object->parent().value() != this) {
-    CERATA_LOG(FATAL, "Object " + object->name() + " already has parent " + object->parent().value()->name());
+    return Status(Err::Graph,
+                  "Object " + object->name() + " already has parent "
+                      + object->parent().value()->name());
   }
 
   // Get any objects referenced by this object. They must already be on this graph.
@@ -58,8 +62,9 @@ Graph &Graph::Add(const std::shared_ptr<Object> &object) {
       }
     }
     if (ref->IsNode()) {
-      // There are two special cases where a references doesn't yet have to be owned by this graph.
-      auto gen_node = dynamic_cast<Node *>(ref);
+      // There are two special cases where a references doesn't yet have to be owned by
+      // this graph.
+      auto *gen_node = dynamic_cast<Node *>(ref);
       // Literals are owned by the literal pool, so everything is OK as well in that case.
       if (gen_node->IsLiteral()) {
         continue;
@@ -68,8 +73,8 @@ Graph &Graph::Add(const std::shared_ptr<Object> &object) {
         continue;
       }
     }
-    // Otherwise throw an error.
-    CERATA_LOG(ERROR, "Object [" + ref->name()
+    // Otherwise return an error
+    return Status(Err::Graph, "Object [" + ref->name()
         + "] bound to object [" + object->name()
         + "] is not present on Graph " + name());
   }
@@ -78,41 +83,32 @@ Graph &Graph::Add(const std::shared_ptr<Object> &object) {
   // Set this graph as parent.
   object->SetParent(this);
 
-  return *this;
+  return Status::OK();
 }
 
-Graph &Graph::Add(const std::vector<std::shared_ptr<Object>> &objects) {
+Status Graph::Add(const std::vector<std::shared_ptr<Object>> &objects) {
   for (const auto &obj : objects) {
-    Add(obj);
+    RETURN_SERR(Add(obj));
   }
-  return *this;
+  return Status::OK();
 }
 
-Graph &Graph::Remove(Object *obj) {
+Status Graph::Remove(Object *obj) {
   for (auto o = objects_.begin(); o < objects_.end(); o++) {
     if (o->get() == obj) {
       objects_.erase(o);
     }
   }
-  return *this;
+  return Status::OK();
 }
 
-std::optional<Node *> Graph::FindNode(const std::string &node_name) const {
+std::optional<Node *> Graph::GetNode(const std::string &node_name) const {
   for (const auto &n : GetAll<Node>()) {
     if (n->name() == node_name) {
       return n;
     }
   }
   return std::nullopt;
-}
-
-Node *Graph::GetNode(const std::string &node_name) const {
-  for (const auto &n : GetAll<Node>()) {
-    if (n->name() == node_name) {
-      return n;
-    }
-  }
-  CERATA_LOG(FATAL, "Node with name " + node_name + " does not exist on Graph " + this->name());
 }
 
 size_t Graph::CountNodes(Node::NodeID id) const {
@@ -218,15 +214,12 @@ Graph &Graph::SetMeta(const std::string &key, std::string value) {
 }
 
 bool Graph::Has(const std::string &name) {
-  for (const auto &o : objects_) {
-    if (o->name() == name) {
-      return true;
-    }
-  }
-  return false;
+  return std::any_of(objects_.begin(),
+                     objects_.end(),
+                     [=](const auto &o) { return o->name() == name; });
 }
 
-std::string Graph::ToStringAllOjects() const {
+std::string Graph::ToStringAllObjects() const {
   std::stringstream ss;
   for (const auto &o : objects_) {
     ss << o->name();
@@ -271,10 +264,10 @@ std::vector<const Component *> Component::GetAllInstanceComponents() const {
     const Component *comp = nullptr;
     if (child->IsComponent()) {
       // Graph itself is the component to potentially insert
-      auto child_as_comp = dynamic_cast<Component *>(child.get());
+      auto *child_as_comp = dynamic_cast<Component *>(child.get());
       comp = child_as_comp;
     } else if (child->IsInstance()) {
-      auto child_as_inst = dynamic_cast<Instance *>(child.get());
+      auto *child_as_inst = dynamic_cast<Instance *>(child.get());
       // Graph is an instance, its component definition should be inserted.
       comp = child_as_inst->component();
     }
@@ -288,7 +281,8 @@ std::vector<const Component *> Component::GetAllInstanceComponents() const {
   return ret;
 }
 
-Instance *Component::Instantiate(const std::shared_ptr<Component> &comp, const std::string &name) {
+Instance *Component::Instantiate(const std::shared_ptr<Component> &comp,
+                                 const std::string &name) {
   return Instantiate(comp.get(), name);
 }
 
@@ -307,25 +301,24 @@ Instance *Component::Instantiate(Component *comp, const std::string &name) {
   }
   auto inst = Instance::Make(comp, new_name, this);
 
-  // Now, all parameters are reconnected to their defaults. Add all these to the inst to component node map.
-  // Whenever we derive stuff from instantiated nodes, like signalizing a port, we will know what value to use.
+  // Now, all parameters are reconnected to their defaults.
+  // Add all these to the inst to component node map.
+  // Whenever we derive stuff from instantiated nodes, like signalizing a port,
+  // we will know what value to use.
   for (const auto &param : inst->GetAll<Parameter>()) {
     inst_to_comp[param] = param->default_value();
   }
 
-  auto raw_ptr = inst.get();
+  auto *raw_ptr = inst.get();
   AddChild(std::move(inst));
 
   return raw_ptr;
 }
 
 bool Component::HasChild(const std::string &name) const {
-  for (const auto &g : this->children()) {
-    if (g->name() == name) {
-      return true;
-    }
-  }
-  return false;
+  return std::any_of(children_.begin(),
+                     children_.end(),
+                     [=](const auto &g) { return g->name() == name; });
 }
 
 bool Component::HasChild(const Instance &inst) const {
@@ -337,41 +330,51 @@ bool Component::HasChild(const Instance &inst) const {
   return false;
 }
 
-static void ThrowErrorIfInstantiated(const Graph &g, bool was_instantiated, const Object &o) {
+static Status CheckIfInstantiated(const Graph &g,
+                                  bool was_instantiated,
+                                  const Object &o) {
   if (was_instantiated) {
     bool generate_warning = false;
     if (o.IsNode()) {
-      auto &node = dynamic_cast<const Node &>(o);
+      const auto &node = dynamic_cast<const Node &>(o);
       if (node.IsPort() || node.IsParameter()) {
         generate_warning = true;
       }
     } else if (o.IsArray()) {
-      auto &array = dynamic_cast<const NodeArray &>(o);
+      const auto &array = dynamic_cast<const NodeArray &>(o);
       if (array.base()->IsPort() || array.base()->IsParameter()) {
         generate_warning = true;
       }
     }
     if (generate_warning) {
-      CERATA_LOG(ERROR, "Mutating port or parameter nodes " + o.name() + " of component graph " + g.name()
-          + " after instantiation is not allowed.");
+      return Status(Err::Graph,
+                    "Mutating port or parameter nodes " + o.name()
+                        + " of component graph "
+                        + g.name()
+                        + " after instantiation is not allowed.");
     }
   }
+  return Status::OK();
 }
 
-Graph &Component::Add(const std::shared_ptr<Object> &object) {
-  ThrowErrorIfInstantiated(*this, was_instantiated, *object);
+Status Component::Add(const std::shared_ptr<Object> &object) {
+  RETURN_SERR(CheckIfInstantiated(*this, was_instantiated, *object));
   return Graph::Add(object);
 }
 
-Graph &Component::Remove(Object *object) {
-  ThrowErrorIfInstantiated(*this, was_instantiated, *object);
+Status Component::Remove(Object *object) {
+  RETURN_SERR(CheckIfInstantiated(*this, was_instantiated, *object));
   return Graph::Remove(object);
 }
 
-Graph &Component::Add(const std::vector<std::shared_ptr<Object>> &objects) { return Graph::Add(objects); }
+Status Component::Add(const std::vector<std::shared_ptr<Object>> &objects) {
+  return Graph::Add(objects);
+}
 
-std::unique_ptr<Instance> Instance::Make(Component *component, const std::string &name, Component *parent) {
-  auto inst = new Instance(component, name, parent);
+std::unique_ptr<Instance> Instance::Make(Component *component,
+                                         const std::string &name,
+                                         Component *parent) {
+  auto *inst = new Instance(component, name, parent);
   return std::unique_ptr<Instance>(inst);
 }
 
@@ -393,16 +396,17 @@ Instance::Instance(Component *comp, std::string name, Component *parent)
   }
 }
 
-Graph &Instance::Add(const std::shared_ptr<Object> &object) {
+Status Instance::Add(const std::shared_ptr<Object> &object) {
   if (object->IsNode()) {
     auto node = std::dynamic_pointer_cast<Node>(object);
     if (node->IsSignal()) {
-      CERATA_LOG(FATAL, "Instance Graph cannot own Signal nodes. " + node->ToString());
+      return Status(Err::Graph,
+                    "Instance Graph cannot own Signal nodes. " + node->ToString());
     }
   }
-  Graph::Add(object);
+  RETURN_SERR(Graph::Add(object));
   object->SetParent(this);
-  return *this;
+  return Status::OK();
 }
 
 Graph &Instance::SetParent(Graph *parent) {

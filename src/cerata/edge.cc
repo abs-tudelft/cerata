@@ -20,6 +20,7 @@
 #include <string>
 #include <optional>
 
+#include "cerata/errors.h"
 #include "cerata/graph.h"
 #include "cerata/node.h"
 #include "cerata/logging.h"
@@ -36,7 +37,7 @@ Edge::Edge(std::string name, Node *dst, Node *src)
 std::shared_ptr<Edge> Edge::Make(const std::string &name,
                                  Node *dst,
                                  Node *src) {
-  auto e = new Edge(name, dst, src);
+  auto *e = new Edge(name, dst, src);
   return std::shared_ptr<Edge>(e);
 }
 
@@ -65,95 +66,109 @@ static void CheckDomains(Node *src, Node *dst) {
   }
 }
 
-std::shared_ptr<Edge> Connect(Node *dst, Node *src) {
+Result<std::shared_ptr<Edge>> Connect(Node *dst, Node *src) {
   // Check for potential errors
   if (src == nullptr) {
-    CERATA_LOG(FATAL, "Source node is null");
-    return nullptr;
+    return error(Err::Edge, "Source node is null");
   } else if (dst == nullptr) {
-    CERATA_LOG(FATAL, "Destination node is null");
-    return nullptr;
+    return error(Err::Edge, "Destination node is null");
   }
 
-  // Check if the clock domains correspond. Currently, this doesn't result in an error as automated CDC support is not
-  // in place yet. Just generate a warning for now:
+  // Check if the clock domains correspond. Currently, this doesn't result in an error as
+  // automated CDC support is not in place yet. Just generate a warning for now:
   CheckDomains(src, dst);
 
   // Check if either source or destination is a signal or port.
   if (src->IsPort() || src->IsSignal()) {
     // Check if the types can be mapped onto each other.
     if (!src->type()->GetMapper(dst->type())) {
-      CERATA_LOG(ERROR, "No known type mapping available for connection between node ["
-          + dst->ToString() + "] and ["
-          + src->ToString() + "]");
+      return error(Err::Edge,
+                   "No known type mapping available for connection between node ["
+                       + dst->ToString() + "] and ["
+                       + src->ToString() + "]");
     }
     // TODO(johanpel): do something similar for parameters, literals, etc...
   }
 
   // Deal with specific of nodes that are on a graph.
   if (src->parent() && dst->parent()) {
-    auto sp = src->parent().value();
-    auto dp = dst->parent().value();
+    auto *sp = src->parent().value();
+    auto *dp = dst->parent().value();
     if (dp->IsComponent()) {
       if (sp->IsComponent() && (sp != dp)) {
-        // Check if we're not making a component to component connection on different components.
-        CERATA_LOG(ERROR, "Edge between component " + dp->name() + " node " + dst->name() +
-            " and component " + sp->name() + " node " + src->name() + " not allowed.");
+        // Check if we're not making a component to component connection on different
+        // components.
+        return error(Err::Edge,
+                     "Edge between component " + dp->name() + " node " + dst->name() +
+                         " and component " + sp->name() + " node " + src->name()
+                         + " not allowed.");
       }
-      auto si = dynamic_cast<Instance *>(sp);
-      auto dc = dynamic_cast<Component *>(dp);
-      // Check if we're not sourcing from an instance parameter into a node on the instance parent:
+      auto *si = dynamic_cast<Instance *>(sp);
+      auto *dc = dynamic_cast<Component *>(dp);
+      // Check if we're not sourcing from an instance parameter into a node on the
+      // instance parent:
       if (dc->HasChild(*si) && src->IsParameter()) {
-        CERATA_LOG(ERROR, "Instance parameters can not source component nodes.");
+        return error(Err::Edge,
+                     "Instance parameters can not source component nodes.");
       }
     }
   }
   if (dst->parent()) {
-    auto dp = dst->parent().value();
+    auto *dp = dst->parent().value();
     if (dp->IsInstance()) {
-      auto ip = dynamic_cast<Instance *>(dp);
-      // When we're connecting a parameter node of an instance, add it to the instance-to-component rebind map.
-      // We must do this because otherwise, if we e.g. attach signals to instance ports, the signal type generics
-      // could be bound to the instance parameter. They should be rebound to the source of the parameter.
-      auto map = dynamic_cast<Component *>(ip->parent())->inst_to_comp_map();
+      auto *ip = dynamic_cast<Instance *>(dp);
+      // When we're connecting a parameter node of an instance, add it to the
+      // instance-to-component rebind map. We must do this because otherwise, if we e.g.
+      // attach signals to instance ports, the signal type generics could be bound to the
+      // instance parameter. They should be rebound to the source of the parameter.
+      auto *map = dynamic_cast<Component *>(ip->parent())->inst_to_comp_map();
       (*map)[dst] = src;
     }
   }
 
   // If the destination is a terminator
   if (dst->IsPort()) {
-    auto port = dynamic_cast<Port *>(dst);
+    auto *port = dynamic_cast<Port *>(dst);
     // Check if it has a parent
     if (dst->parent()) {
-      auto parent = *dst->parent();
+      auto *parent = *dst->parent();
       if (parent->IsInstance() && port->IsOutput()) {
-        // If the parent is an instance, and the terminator node is an output, then we may not drive it.
-        CERATA_LOG(FATAL,
-                   "Cannot drive instance " + dst->parent().value()->ToString() + " port " + dst->ToString()
-                       + " of mode output with " + src->ToString());
+        // If the parent is an instance, and the terminator node is an output,
+        // then we may not drive it.
+        return error(Err::Edge,
+                     "Cannot drive instance " + dst->parent().value()->ToString()
+                         + " port "
+                         + dst->ToString()
+                         + " of mode output with " + src->ToString());
       } else if (parent->IsComponent() && port->IsInput()) {
-        // If the parent is a component, and the terminator node is an input, then we may not drive it.
-        CERATA_LOG(FATAL,
-                   "Cannot drive component " + dst->parent().value()->ToString() + " port " + dst->ToString()
-                       + " of mode input with " + src->ToString());
+        // If the parent is a component, and the terminator node is an input,
+        // then we may not drive it.
+        return error(Err::Edge,
+                     "Cannot drive component " + dst->parent().value()->ToString()
+                         + " port " + dst->ToString()
+                         + " of mode input with " + src->ToString());
       }
     }
   }
 
   // If the source is a terminator
   if (src->IsPort()) {
-    auto port = dynamic_cast<Port *>(src);
+    auto *port = dynamic_cast<Port *>(src);
     // Check if it has a parent
     if (src->parent()) {
-      auto parent = *src->parent();
+      auto *parent = *src->parent();
       if (parent->IsInstance() && port->IsInput()) {
-        // If the parent is an instance, and the terminator node is an input, then we may not source from it.
-        CERATA_LOG(FATAL,
-                   "Cannot source from instance port " + src->ToString() + " of mode input on " + parent->ToString());
+        // If the parent is an instance, and the terminator node is an input,
+        // then we may not source from it.
+        return error(Err::Edge,
+                     "Cannot source from instance port " + src->ToString()
+                         + " of mode input on " + parent->ToString());
       } else if (parent->IsComponent() && port->IsOutput()) {
-        // If the parent is a component, and the terminator node is an output, then we may not source from it.
-        CERATA_LOG(FATAL,
-                   "Cannot source from component port " + src->ToString() + " of mode output on " + parent->ToString());
+        // If the parent is a component, and the terminator node is an output,
+        // then we may not source from it.
+        return error(Err::Edge,
+                     "Cannot source from component port " + src->ToString()
+                         + " of mode output on " + parent->ToString());
       }
     }
   }
@@ -165,16 +180,34 @@ std::shared_ptr<Edge> Connect(Node *dst, Node *src) {
   return edge;
 }
 
-std::shared_ptr<Edge> operator<<=(Node *dst, const std::shared_ptr<Node> &src) {
+Result<std::shared_ptr<Edge>> Connect(Node *dst, const std::shared_ptr<Node> &src) {
   return Connect(dst, src.get());
 }
 
-std::shared_ptr<Edge> operator<<=(const std::shared_ptr<Node> &dst, const std::shared_ptr<Node> &src) {
+Result<std::shared_ptr<Edge>> Connect(const std::shared_ptr<Node> &dst, Node *src) {
+  return Connect(dst.get(), src);
+}
+
+Result<std::shared_ptr<Edge>> Connect(const std::shared_ptr<Node> &dst,
+                                      const std::shared_ptr<Node> &src) {
   return Connect(dst.get(), src.get());
 }
 
+Result<std::shared_ptr<Edge>> Connect(Node *dst, const std::string &str) {
+  return Connect(dst, strl(str));
+}
+
+std::shared_ptr<Edge> operator<<=(Node *dst, const std::shared_ptr<Node> &src) {
+  return Connect(dst, src.get()).value();
+}
+
+std::shared_ptr<Edge> operator<<=(const std::shared_ptr<Node> &dst,
+                                  const std::shared_ptr<Node> &src) {
+  return Connect(dst.get(), src.get()).value();
+}
+
 std::shared_ptr<Edge> operator<<=(const std::shared_ptr<Node> &dst, Node *src) {
-  return Connect(dst.get(), src);
+  return Connect(dst.get(), src).value();
 }
 
 std::vector<Edge *> GetAllEdges(const Graph &graph) {
@@ -206,7 +239,7 @@ std::vector<Edge *> GetAllEdges(const Graph &graph) {
   }
 
   if (graph.IsComponent()) {
-    auto &comp = dynamic_cast<const Component &>(graph);
+    const auto &comp = dynamic_cast<const Component &>(graph);
     for (const auto &g : comp.children()) {
       auto child_edges = GetAllEdges(*g);
       all_edges.insert(all_edges.end(), child_edges.begin(), child_edges.end());
@@ -214,18 +247,6 @@ std::vector<Edge *> GetAllEdges(const Graph &graph) {
   }
 
   return all_edges;
-}
-
-std::shared_ptr<Edge> Connect(Node *dst, const std::shared_ptr<Node> &src) {
-  return Connect(dst, src.get());
-}
-
-std::shared_ptr<Edge> Connect(const std::shared_ptr<Node> &dst, Node *src) {
-  return Connect(dst.get(), src);
-}
-
-std::shared_ptr<Edge> Connect(const std::shared_ptr<Node> &dst, const std::shared_ptr<Node> &src) {
-  return Connect(dst.get(), src.get());
 }
 
 std::optional<Node *> Edge::GetOtherNode(const Node &node) const {
@@ -238,7 +259,7 @@ std::optional<Node *> Edge::GetOtherNode(const Node &node) const {
   }
 }
 
-static std::shared_ptr<ClockDomain> DomainOf(NodeArray *node_array) {
+static std::optional<std::shared_ptr<ClockDomain>> DomainOf(NodeArray *node_array) {
   std::shared_ptr<ClockDomain> result;
   auto base = node_array->base();
   if (base->IsSignal()) {
@@ -246,12 +267,15 @@ static std::shared_ptr<ClockDomain> DomainOf(NodeArray *node_array) {
   } else if (base->IsPort()) {
     result = std::dynamic_pointer_cast<Port>(base)->domain();
   } else {
-    throw std::runtime_error("Base node is not a signal or port.");
+    return std::nullopt;
   }
   return result;
 }
 
-Signal *AttachSignalToNode(Component *comp, NormalNode *node, NodeMap *rebinding, std::string name) {
+Signal *AttachSignalToNode(Component *comp,
+                           NormalNode *node,
+                           NodeMap *rebinding,
+                           std::string name) {
   std::shared_ptr<Type> type = node->type()->shared_from_this();
   // Figure out if the type is a generic type.
   if (type->IsGeneric()) {
@@ -280,7 +304,8 @@ Signal *AttachSignalToNode(Component *comp, NormalNode *node, NodeMap *rebinding
       }
     }
     auto new_name = name;
-    // Check if a node with this name already exists, generate a new name suffixed with a number if it does.
+    // Check if a node with this name already exists, generate a new name suffixed with
+    // a number if it does.
     int i = 0;
     while (comp->Has(new_name)) {
       i++;
@@ -300,7 +325,7 @@ Signal *AttachSignalToNode(Component *comp, NormalNode *node, NodeMap *rebinding
   // Iterate over any existing edges that are sinks of the original node.
   for (auto &e : node->sinks()) {
     // Figure out the original destination of this edge.
-    auto dst = e->dst();
+    auto *dst = e->dst();
     // Remove the edge from the original node and the destination node.
     node->RemoveEdge(e);
     dst->RemoveEdge(e);
@@ -312,7 +337,7 @@ Signal *AttachSignalToNode(Component *comp, NormalNode *node, NodeMap *rebinding
   // Iterate over any existing edges that source the original node.
   for (auto &e : node->sources()) {
     // Get the destination node.
-    auto src = e->src();
+    auto *src = e->src();
     // Remove the original edge from the port array child node and source node.
     node->RemoveEdge(e);
     src->RemoveEdge(e);
@@ -324,7 +349,9 @@ Signal *AttachSignalToNode(Component *comp, NormalNode *node, NodeMap *rebinding
   return new_signal.get();
 }
 
-SignalArray *AttachSignalArrayToNodeArray(Component *comp, NodeArray *array, NodeMap *rebinding) {
+SignalArray *AttachSignalArrayToNodeArray(Component *comp,
+                                          NodeArray *array,
+                                          NodeMap *rebinding) {
   // The size parameter must potentially be "rebound".
   ImplicitlyRebindNodes(comp, {array->size()}, rebinding);
   auto size = rebinding->at(array->size())->shared_from_this();
@@ -345,8 +372,8 @@ SignalArray *AttachSignalArrayToNodeArray(Component *comp, NodeArray *array, Nod
     type = array->type()->Copy(*rebinding);
   }
 
-  // Get the clock domain of the array node
-  auto domain = DomainOf(array);
+  // Get the clock domain of the array node, or use default otherwise.
+  auto domain = DomainOf(array).value_or(default_domain());
   auto name = array->name();
   // Check if the array is on an instance, and prepend that.
   if (array->parent()) {
@@ -355,7 +382,8 @@ SignalArray *AttachSignalArrayToNodeArray(Component *comp, NodeArray *array, Nod
     }
   }
   auto new_name = name;
-  // Check if a node with this name already exists, generate a new name suffixed with a number if it does.
+  // Check if a node with this name already exists, generate a new name suffixed with
+  // a number if it does.
   int i = 0;
   while (comp->Has(new_name)) {
     i++;
@@ -363,13 +391,14 @@ SignalArray *AttachSignalArrayToNodeArray(Component *comp, NodeArray *array, Nod
   }
 
   // Create the new array.
-  auto new_array = signal_array(new_name, type, size, domain);
+  auto new_array = SignalArray::Make(new_name, type, size, domain).value();
   comp->Add(new_array);
 
   // Now iterate over all original nodes on the NodeArray and reconnect them.
   for (size_t n = 0; n < array->num_nodes(); n++) {
     // Create a new child node inside the array, but don't increment the size.
-    // We've already (potentially) rebound the size from some other source and it should be set properly already.
+    // We've already (potentially) rebound the size from some other source and it
+    // should be set properly already.
     auto new_sig = new_array->Append(false);
 
     bool has_sinks = false;
@@ -378,7 +407,7 @@ SignalArray *AttachSignalArrayToNodeArray(Component *comp, NodeArray *array, Nod
     // Iterate over any existing edges that are sinked by the original array node.
     for (auto &e : array->node(n)->sinks()) {
       // Figure out the original destination.
-      auto dst = e->dst();
+      auto *dst = e->dst();
       // Source the destination with the new signal.
       Connect(dst, new_sig);
       // Remove the original edge from the port array child node and destination node.
@@ -390,7 +419,7 @@ SignalArray *AttachSignalArrayToNodeArray(Component *comp, NodeArray *array, Nod
     // Iterate over any existing edges that source the original array node.
     for (auto &e : array->node(n)->sources()) {
       // Get the destination node.
-      auto src = e->src();
+      auto *src = e->src();
       Connect(new_sig, src);
       // Remove the original edge from the port array child node and source node.
       array->node(n)->RemoveEdge(e);
@@ -398,7 +427,8 @@ SignalArray *AttachSignalArrayToNodeArray(Component *comp, NodeArray *array, Nod
       has_sources = true;
     }
 
-    // Source the new signal node with the original node, depending on whether it had any sinks or sources.
+    // Source the new signal node with the original node, depending on whether it had any
+    // sinks or sources.
     if (has_sinks) {
       Connect(new_sig, array->node(n));
     }
@@ -407,10 +437,6 @@ SignalArray *AttachSignalArrayToNodeArray(Component *comp, NodeArray *array, Nod
     }
   }
   return new_array.get();
-}
-
-std::shared_ptr<Edge> Connect(Node *dst, std::string str) {
-  return Connect(dst, strl(std::move(str)));
 }
 
 }  // namespace cerata

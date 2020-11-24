@@ -14,6 +14,7 @@
 
 #pragma once
 
+#include <utility>
 #include <vector>
 #include <string>
 #include <utility>
@@ -28,7 +29,6 @@
 #include "cerata/vhdl/template.h"
 
 #include "cerata/output.h"
-#include "cerata/logging.h"
 
 /// Contains everything related to the VHDL back-end.
 namespace cerata::vhdl {
@@ -58,20 +58,21 @@ constexpr char NO_INSERT_SIGNAL[] = "vhdl_no_insert_signal";
 /// VHDL Output Generator.
 class VHDLOutputGenerator : public OutputGenerator {
  public:
-  /// Copyright notice to place on top of a file.
-  std::string notice_;
-
-  /// @brief Construct a new VHDLOutputGenerator.
-  explicit VHDLOutputGenerator(std::string root_dir,
+  /// \brief Construct a new VHDLOutputGenerator.
+  explicit VHDLOutputGenerator(std::filesystem::path root,
                                std::vector<OutputSpec> outputs = {},
                                std::string notice = "")
-      : OutputGenerator(std::move(root_dir), std::move(outputs)), notice_(std::move(notice)) {}
+      : OutputGenerator(std::move(root), std::move(outputs)),
+        notice_(std::move(notice)) {}
 
-  /// @brief Generate the output.
-  void Generate() override;
+  /// \brief Generate the output.
+  Status Generate() override;
 
-  /// @brief Return that the VHDLOutputGenerator will place the files in.
+  /// \brief Return that the VHDLOutputGenerator will place the files in.
   std::string subdir() override { return DEFAULT_SUBDIR; }
+
+  /// Copyright notice to place on top of a file.
+  std::string notice_;
 };
 
 }  // namespace cerata::vhdl

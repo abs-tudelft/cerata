@@ -12,26 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <string>
-#include <memory>
-#include <utility>
+#include <gmock/gmock.h>
+#include <cerata/api.h>
+#include <cerata/vhdl/api.h>
 
-#include "cerata/graph.h"
-#include "cerata/output.h"
+#include "cerata/test_designs.h"
+#include "cerata/test_utils.h"
 
 namespace cerata {
 
-OutputGenerator::OutputGenerator(std::filesystem::path root,
-                                 std::vector<OutputSpec> outputs)
-    : root_(std::move(root)), outputs_(std::move(outputs)) {}
-
-OutputGenerator &OutputGenerator::AddOutput(const OutputSpec &output) {
-  if (output.comp != nullptr) {
-    outputs_.push_back(output);
-  } else {
-    throw std::runtime_error("Component is nullptr.");
-  }
-  return *this;
+TEST(VHDL_OUTPUT, OutputGenerator) {
+  default_component_pool()->Clear();
+  auto top = GetExampleDesign();
+  auto og = vhdl::VHDLOutputGenerator(std::filesystem::current_path(), {{top.get(), {}}});
+  auto status = og.Generate();
+  ASSERT_TRUE(status.ok());
+  ASSERT_TRUE(std::filesystem::exists(
+      std::filesystem::current_path() / "vhdl" / "top.gen.vhd"));
+  ASSERT_TRUE(std::filesystem::remove(
+      std::filesystem::current_path() / "vhdl" / "top.gen.vhd"));
 }
 
 }  // namespace cerata

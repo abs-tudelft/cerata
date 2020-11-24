@@ -23,36 +23,36 @@
 namespace cerata::vhdl {
 
 /// Structure to hold a template replacement string location
-struct trloc {
-  /// @brief Template replacement location constructor.
-  trloc(size_t line, size_t start) : line(line), start(start) {}
+struct ReplaceLoc {
+  /// \brief Template replacement location constructor.
+  ReplaceLoc(size_t line, size_t start) : line(line), start(start) {}
   /// The line.
   size_t line;
   /// The starting character index on the line.
   size_t start;
 };
 
-/// @brief Class to hold and modify a VHDL template file.
+/// \brief Class to hold and modify a VHDL template file.
 class Template {
  public:
-  /// @brief Construct a Template from an input stream.
+  /// \brief Construct a Template from an input stream.
   explicit Template(std::istream *str);
-  /// @brief Construct a Template from an input string.
+  /// \brief Construct a Template from an input string.
   static Template FromString(const std::string& str);
-  /// @brief Construct a Template from a file.
+  /// \brief Construct a Template from a file.
   static Template FromFile(const std::string &filename);
-  /// @brief Mark the locations of all replaceable template strings.
+  /// \brief Mark the locations of all replaceable template strings.
   void Analyze();
-  /// @brief Replace a template replacement string with some number.
+  /// \brief Replace a template replacement string with some number.
   void Replace(const std::string &str, int with);
-  /// @brief Replace a template replacement string with some other string.
+  /// \brief Replace a template replacement string with some other string.
   void Replace(const std::string &str, const std::string &with);
-  /// @brief Return the file as a string.
+  /// \brief Return the file as a string.
   std::string ToString();
 
  private:
   /// Map from a template replacement string to a vector of line numbers.
-  std::map<std::string, std::vector<trloc>> replace_list_;
+  std::map<std::string, std::vector<ReplaceLoc>> replace_list_;
   /// Lines of the file.
   std::vector<std::string> lines_;
 };

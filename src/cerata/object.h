@@ -40,30 +40,30 @@ class Object : public Named {
   };
 
   /**
-   * @brief Cerata object constructor.
-   * @param name  The name of the object.
-   * @param id    The type ID of the object.
+   * \brief Cerata object constructor.
+   * \param name  The name of the object.
+   * \param id    The type ID of the object.
    */
   explicit Object(std::string name, ID id) : Named(std::move(name)), obj_id_(id) {}
 
-  /// @brief Return the object ID of this object.
+  /// \brief Return the object ID of this object.
   ID obj_id() const { return obj_id_; }
-  /// @brief Return true if this object is a node.
+  /// \brief Return true if this object is a node.
   bool IsNode() const { return obj_id_ == NODE; }
-  /// @brief Return true if this object is an array.
+  /// \brief Return true if this object is an array.
   bool IsArray() const { return obj_id_ == ARRAY; }
 
-  /// @brief Set the parent graph of this object.
+  /// \brief Set the parent graph of this object.
   virtual void SetParent(Graph *parent);
-  /// @brief Return the parent graph of this object, if any. Returns empty option otherwise.
+  /// \brief Return the parent graph of this object, if any.
   virtual std::optional<Graph *> parent() const;
-  /// @brief Deep-copy the object.
+  /// \brief Deep-copy the object.
   virtual std::shared_ptr<Object> Copy() const = 0;
 
-  /// @brief Append all objects that this object owns to the output.
+  /// \brief Append all objects that this object owns to the output.
   virtual void AppendReferences(std::vector<Object *> *out) const = 0;
 
-  /// @brief KV storage for metadata of tools or specific backend implementations
+  /// \brief KV storage for metadata of tools or specific backend implementations
   std::unordered_map<std::string, std::string> meta;
 
  protected:

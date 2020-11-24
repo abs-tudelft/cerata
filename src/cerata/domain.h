@@ -25,38 +25,41 @@ namespace cerata {
 class Node;
 
 /**
- * @brief A clock domain
+ * \brief A clock domain
  *
  * Placeholder for automatically generated clock domain crossing support
  */
 struct ClockDomain : public Named {
-  /// @brief Clock domain constructor
+  /// \brief Clock domain constructor
   explicit ClockDomain(std::string name);
-  /// @brief Create a new clock domain and return a shared pointer to it.
-  static std::shared_ptr<ClockDomain> Make(const std::string &name) { return std::make_shared<ClockDomain>(name); }
+  /// \brief Create a new clock domain and return a shared pointer to it.
+  static std::shared_ptr<ClockDomain> Make(const std::string &name) {
+    return std::make_shared<ClockDomain>(name);
+  }
   // TODO(johanpel): add other properties
 };
 
-/// @brief Return a static default clock domain.
+/// \brief Return a static default clock domain.
 std::shared_ptr<ClockDomain> default_domain();
 
 /**
- * @brief Class to mark nodes with information for synchronous designs, e.g. clock domain.
+ * \brief Class to mark nodes with information for synchronous designs, e.g. clock domain.
  */
 class Synchronous {
  public:
-  /// @brief Synchronous constructor.
-  explicit Synchronous(std::shared_ptr<ClockDomain> domain) : domain_(std::move(domain)) {}
-  /// @brief Return the clock domain to which something is synchronized.
+  /// \brief Synchronous constructor.
+  explicit Synchronous(std::shared_ptr<ClockDomain> domain)
+      : domain_(std::move(domain)) {}
+  /// \brief Return the clock domain to which something is synchronized.
   [[nodiscard]] std::shared_ptr<ClockDomain> domain() const { return domain_; }
-  /// @brief Set the clock domain to which something should be synchronized.
+  /// \brief Set the clock domain to which something should be synchronized.
   void SetDomain(std::shared_ptr<ClockDomain> domain) { domain_ = std::move(domain); }
  protected:
   /// The clock domain.
   std::shared_ptr<ClockDomain> domain_;
 };
 
-/// @brief Return the clock domain of a node, if it is a synchronous node.
-std::optional<std::shared_ptr<ClockDomain>> GetDomain(const Node& node);
+/// \brief Return the clock domain of a node, if it is a synchronous node.
+std::optional<std::shared_ptr<ClockDomain>> GetDomain(const Node &node);
 
 }  // namespace cerata

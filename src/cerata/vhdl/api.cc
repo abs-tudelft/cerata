@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "cerata/vhdl/vhdl.h"
+#include "cerata/vhdl/api.h"
 
 #include <vector>
 #include <string>
@@ -25,38 +25,46 @@
 
 namespace cerata::vhdl {
 
-void VHDLOutputGenerator::Generate() {
+Status VHDLOutputGenerator::Generate() {
   // Make sure the subdirectory exists.
-  CreateDir(root_dir_ + "/" + subdir());
+  auto path = root_ / subdir();
+  RETURN_SERR(CreateDir(path));
+
   size_t num_graphs = 0;
   for (const auto &o : outputs_) {
     // Check if output spec is valid
     if (o.comp == nullptr) {
-      CERATA_LOG(ERROR, "OutputSpec contained no component.");
+      CERATA_LOG(WARNING, "OutputSpec contained no component.");
       continue;
     }
 
-    CERATA_LOG(DEBUG, "VHDL: Transforming Component " + o.comp->name() + " to VHDL-compatible version.");
+    CERATA_LOG(DEBUG,
+               "VHDL: Transforming Component " + o.comp->name()
+                   + " to VHDL-compatible version.");
     auto vhdl_design = Design(o.comp, notice_, DEFAULT_LIBS);
 
     CERATA_LOG(DEBUG, "VHDL: Generating sources for component " + o.comp->name());
     auto vhdl_source = vhdl_design.Generate().ToString();
-    auto vhdl_path = root_dir_ + "/" + subdir() + "/" + o.comp->name() + ".gen.vhd";
-
+    auto vhdl_path = path / (o.comp->name() + ".gen.vhd");
     // Disable backup by default.
-    bool backup = (o.meta.count(meta::BACKUP_EXISTING) > 0) && (o.meta.at(meta::BACKUP_EXISTING) == "true");
+    bool backup = (o.meta.count(meta::BACKUP_EXISTING) > 0)
+        && (o.meta.at(meta::BACKUP_EXISTING) == "true");
 
-    CERATA_LOG(DEBUG, "VHDL: Saving design to: " + vhdl_path);
-    if (!FileExists(vhdl_path) || !backup) {
+    CERATA_LOG(DEBUG, "VHDL: Saving design to: " + vhdl_path.string());
+    if (!std::filesystem::exists(vhdl_path) || !backup) {
       auto vhdl_file = std::ofstream(vhdl_path);
       vhdl_file << vhdl_source;
       vhdl_file.close();
     } else {
-      CERATA_LOG(DEBUG, "VHDL: File exists, backing up and saving to " + vhdl_path + "t");
-      // Copy the old file.
-      auto original = std::ifstream(vhdl_path, std::ios::binary);
-      auto copy = std::ofstream(vhdl_path + ".bak", std::ios::binary);
-      copy << original.rdbuf();
+      auto vhdl_backup_path = vhdl_path += ".bak";
+      CERATA_LOG(DEBUG, "VHDL: File exists, backing up to " + vhdl_backup_path.string());
+      // Attempt to copy the old file.
+      try {
+        std::filesystem::copy(vhdl_path, vhdl_backup_path);
+      } catch (std::filesystem::filesystem_error &e) {
+        return Status(Err::IO, e.what());
+      }
+
       // Save the new file.
       auto vhdl_file = std::ofstream(vhdl_path);
       vhdl_file << vhdl_source;
@@ -64,7 +72,9 @@ void VHDLOutputGenerator::Generate() {
 
     num_graphs++;
   }
-  CERATA_LOG(DEBUG, "VHDL: Generated output for " + std::to_string(num_graphs) + " graphs.");
+  CERATA_LOG(DEBUG,
+             "VHDL: Generated output for " + std::to_string(num_graphs) + " graphs.");
+  return Status::OK();
 }
 
 }  // namespace cerata::vhdl

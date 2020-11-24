@@ -28,17 +28,18 @@
 namespace cerata {
 
 /**
- * @brief A Literal Node
+ * \brief A Literal Node
  *
  * A literal node can be used to store some literal value. A literal node can, for example, be used for Vector Type
  * widths or it can be connected to a Parameter Node, to give the Parameter its value.
  */
+// TODO(johanpel): use std::variant for internal storage
 class Literal : public MultiOutputNode {
  public:
   /// The storage type of the literal value.
   enum class StorageType { INT, UINT, STRING, BOOL };
  protected:
-  /// @brief Literal constructor.
+  /// \brief Literal constructor.
   Literal(std::string name,
           const std::shared_ptr<Type> &type,
           StorageType st,
@@ -66,7 +67,7 @@ class Literal : public MultiOutputNode {
  protected:                                                                                                         \
   TYPENAME NAME##_val_ {}
 
-  /// Bools
+  /// Booleans
  LITERAL_DECL_FACTORY(Bool, bool); //NOLINT
   /// Ints
  LITERAL_DECL_FACTORY(Int, int64_t); //NOLINT
@@ -74,69 +75,83 @@ class Literal : public MultiOutputNode {
  LITERAL_DECL_FACTORY(String, std::string); //NOLINT
 
  public:
-  /// @brief Literal nodes are only owned by the literal pool, hence never have a parent graph.
+  /// Literal nodes are only owned by the literal pool, hence never have a parent graph.
   void SetParent(Graph *graph) override;
-  /// @brief Create a boolean literal.
+  /// \brief Create a boolean literal.
   static std::shared_ptr<Literal> Make(bool value) { return MakeBool(value); }
-  /// @brief Create an integer literal.
+  /// \brief Create an integer literal.
   static std::shared_ptr<Literal> Make(int64_t value) { return MakeInt(value); }
-  /// @brief Create a string literal.
-  static std::shared_ptr<Literal> Make(std::string value) { return MakeString(std::move(value)); }
+  /// \brief Create a string literal.
+  static std::shared_ptr<Literal> Make(std::string value) {
+    return MakeString(std::move(value));
+  }
 
-  /// @brief Create a copy of this Literal.
+  /// \brief Create a copy of this Literal.
   std::shared_ptr<Object> Copy() const override;
 
-  /// @brief A literal node has no inputs. This function returns an empty list.
+  /// \brief A literal node has no inputs. This function returns an empty list.
   inline std::vector<Edge *> sources() const override { return {}; }
-  /// @brief Get the output edges of this Node.
+  /// \brief Get the output edges of this Node.
   inline std::vector<Edge *> sinks() const override { return ToRawPointers(outputs_); }
 
-  /// @brief Convert the Literal value to a human-readable string.
+  /// \brief Convert the Literal value to a human-readable string.
   std::string ToString() const override;
 
-  /// @brief Return the storage type of the literal.
+  /// \brief Return the storage type of the literal.
   StorageType storage_type() const { return storage_type_; }
 };
 
 /**
- * @brief Obtain the raw value of a literal node.
+ * \brief Obtain the raw value of a literal node.
  * @tparam T    The compile-time return type.
- * @param node  The node to obtain the value from.
- * @return      The value of type T.
+ * \param node  The node to obtain the value from.
+ * \return      The value of type T.
  */
 template<typename T>
-T RawValueOf(const Literal &node) { throw std::runtime_error("Can not obtain raw value for type."); }
+T RawValueOf(const Literal &node) {
+  throw std::runtime_error("Can not obtain raw value for type.");
+}
 
-/// @brief Template specialization for RawValueOf<bool>
+/// \brief Template specialization for RawValueOf<bool>
 template<>
 inline bool RawValueOf(const Literal &node) { return node.BoolValue(); }
 
-/// @brief Template specialization for RawValueOf<int>
+/// \brief Template specialization for RawValueOf<int>
 template<>
 inline int64_t RawValueOf(const Literal &node) { return node.IntValue(); }
 
-/// @brief Template specialization for RawValueOf<std::string>
+/// \brief Template specialization for RawValueOf<std::string>
 template<>
 inline std::string RawValueOf(const Literal &node) { return node.StringValue(); }
 
-/// @brief Obtain the Literal::StorageType enum value of a C++ type T.
+/// \brief Obtain the Literal::StorageType enum value of a C++ type T.
 template<typename T>
-Literal::StorageType StorageTypeOf() { throw std::runtime_error("Type has no known StorageType."); }
+Literal::StorageType StorageTypeOf() {
+  throw std::runtime_error("Type has no known StorageType.");
+}
 
-/// @brief Template specialization for StorageTypeOf<bool>
+/// \brief Template specialization for StorageTypeOf<bool>
 template<>
-inline Literal::StorageType StorageTypeOf<bool>() { return Literal::StorageType::BOOL; }
+inline Literal::StorageType StorageTypeOf<bool>() {
+  return Literal::StorageType::BOOL;
+}
 
-/// @brief Template specialization for StorageTypeOf<int>
+/// \brief Template specialization for StorageTypeOf<int>
 template<>
-inline Literal::StorageType StorageTypeOf<int64_t>() { return Literal::StorageType::INT; }
+inline Literal::StorageType StorageTypeOf<int64_t>() {
+  return Literal::StorageType::INT;
+}
 
-/// @brief Template specialization for StorageTypeOf<int>
+/// \brief Template specialization for StorageTypeOf<int>
 template<>
-inline Literal::StorageType StorageTypeOf<uint64_t>() { return Literal::StorageType::UINT; }
+inline Literal::StorageType StorageTypeOf<uint64_t>() {
+  return Literal::StorageType::UINT;
+}
 
-/// @brief Template specialization for StorageTypeOf<std::string>
+/// \brief Template specialization for StorageTypeOf<std::string>
 template<>
-inline Literal::StorageType StorageTypeOf<std::string>() { return Literal::StorageType::STRING; }
+inline Literal::StorageType StorageTypeOf<std::string>() {
+  return Literal::StorageType::STRING;
+}
 
 }  // namespace cerata

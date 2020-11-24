@@ -15,8 +15,8 @@
 #pragma once
 
 #include <cerata/api.h>
-#include <cerata/dot/dot.h>
-#include <cerata/vhdl/vhdl.h>
+#include <cerata/dot/api.h>
+#include <cerata/vhdl/api.h>
 
 #include <vector>
 #include <memory>
@@ -26,22 +26,23 @@
 namespace cerata {
 
 std::shared_ptr<Component> GetTypeExpansionComponent() {
-  auto w1 = parameter("width", integer(), intl(8));
-  auto w2 = parameter("width", integer(), intl(8));
+  auto w1 = parameter("width1", integer(), intl(8));
+  auto w2 = parameter("width2", integer(), intl(8));
   NodeMap rb;
   rb[w1.get()] = w2.get();
   auto vec = vector("data", w1);
   auto rec = record({field("cerata", vec),
                      field("is", vec),
                      field("awesome", vec)});
-  auto str = stream(rec);
-  auto data_in = port("data", str, Port::Dir::IN);
-  auto data_out = port("data", str->Copy(rb), Port::Dir::OUT);
+  auto str1 = stream(rec);
+  auto str2 = str1->Copy(rb);
+  auto data_in = port("data", str1, Port::Dir::IN);
+  auto data_out = port("data", str2, Port::Dir::OUT);
   auto foo = component("foo", {w1, data_in});
   auto bar = component("bar", {w2, data_out});
   auto top = component("top");
-  auto foo_inst = top->Instantiate(foo, "foo");
-  auto bar_inst = top->Instantiate(bar, "bar");
+  auto *foo_inst = top->Instantiate(foo, "foo");
+  auto *bar_inst = top->Instantiate(bar, "bar");
   Connect(foo_inst->prt("data"), bar_inst->prt("data"));
   return top;
 }
@@ -56,19 +57,22 @@ std::shared_ptr<Component> GetArrayToArrayInternalComponent(bool invert = false)
   auto top_comp = component("top_comp");
 
   auto a_size = parameter("size", integer(), intl(0));
-  auto a_array = port_array("array", data, a_size, invert ? Term::IN : Term::OUT);
+  auto a_array =
+      PortArray::Make("array", data, a_size, invert ? Term::IN : Term::OUT).value();
   auto a_comp = component(a, {a_size, a_array});
-  auto a_inst = top_comp->Instantiate(a_comp);
+  auto *a_inst = top_comp->Instantiate(a_comp);
 
   auto x_size = parameter("size", integer(), intl(0));
-  auto x_array = port_array("array", data, x_size, invert ? Term::OUT : Term::IN);
+  auto x_array =
+      PortArray::Make("array", data, x_size, invert ? Term::OUT : Term::IN).value();
   auto x_comp = component(x, {x_size, x_array});
-  auto x_inst = top_comp->Instantiate(x_comp);
+  auto *x_inst = top_comp->Instantiate(x_comp);
 
   auto y_size = parameter("size", integer(), intl(0));
-  auto y_array = port_array("array", data, y_size, invert ? Term::OUT : Term::IN);
+  auto y_array =
+      PortArray::Make("array", data, y_size, invert ? Term::OUT : Term::IN).value();
   auto y_comp = component(y, {y_size, y_array});
-  auto y_inst = top_comp->Instantiate(y_comp);
+  auto *y_inst = top_comp->Instantiate(y_comp);
 
   a_inst->prt_arr("array")->Append();
   a_inst->prt_arr("array")->Append();
@@ -99,13 +103,18 @@ std::shared_ptr<Component> GetArrayToArrayComponent(bool invert = false) {
   auto data = vector(8);
 
   auto top_size = parameter("top_size", integer(), intl(0));
-  auto top_array = port_array("top_array", data, top_size, invert ? Term::OUT : Term::IN);
+  auto top_array =
+      PortArray::Make("top_array", data, top_size, invert ? Term::OUT : Term::IN).value();
   auto top_comp = component("top_comp", {top_size, top_array});
 
   auto child_size = parameter("child_size", integer(), intl(0));
-  auto child_array = port_array("child_array", data, child_size, invert ? Term::OUT : Term::IN);
+  auto child_array =
+      PortArray::Make("child_array",
+                      data,
+                      child_size,
+                      invert ? Term::OUT : Term::IN).value();
   auto child_comp = component("child_comp", {child_size, child_array});
-  auto child_inst = top_comp->Instantiate(child_comp);
+  auto *child_inst = top_comp->Instantiate(child_comp);
 
   if (invert) {
     child_inst->prt_arr("child_array")->Append();
@@ -158,8 +167,8 @@ std::shared_ptr<Component> GetTypeConvComponent() {
   auto top = component("top");
   auto x_comp = component("X", {pA});
   auto y_comp = component("Y", {pB});
-  auto x = top->Instantiate(x_comp);
-  auto y = top->Instantiate(y_comp);
+  auto *x = top->Instantiate(x_comp);
+  auto *y = top->Instantiate(y_comp);
 
   // Connect ports
   Connect(y->prt("B"), x->prt("A"));
@@ -215,7 +224,7 @@ std::shared_ptr<Component> GetStreamConcatComponent() {
   y_comp->meta()[vhdl::meta::PRIMITIVE] = "true";
   y_comp->meta()[vhdl::meta::LIBRARY] = "test";
   y_comp->meta()[vhdl::meta::PACKAGE] = "test";
-  auto y = x_comp->Instantiate(y_comp);
+  auto *y = x_comp->Instantiate(y_comp);
 
   // Connect ports
   Connect(x_comp->prt("A0"), y->prt("B"));
@@ -265,7 +274,7 @@ std::shared_ptr<Component> GetExampleDesign() {
   // A component declaration using all of the above.
   auto x = component("x", {x_width,
                            size,
-                           port_array("a", rec, size, Port::IN)});
+                           PortArray::Make("a", rec, size, Port::IN).value()});
 
   // Another parameter for the next component.
   auto y_width = parameter("width");
@@ -274,13 +283,13 @@ std::shared_ptr<Component> GetExampleDesign() {
                            port("b", (*rec)({y_width}), Port::OUT)});
 
   // Instantiate one X component.
-  auto xi = top->Instantiate(x);
-  Connect(xi->GetNode("width"), top->GetNode("width"));
+  auto *xi = top->Instantiate(x);
+  Connect(xi->GetNode("width").value(), top->GetNode("width").value());
 
   // Instantiate three Y components.
   for (int i = 0; i < 3; i++) {
-    auto yi = top->Instantiate(y);
-    Connect(yi->GetNode("width"), top->GetNode("width"));
+    auto *yi = top->Instantiate(y);
+    Connect(yi->GetNode("width").value(), top->GetNode("width").value());
     // Append the port array "a" on X, and source it with port "b" of the new Y instance.
     xi->prt_arr("a")->Append() <<= yi->prt("b");
   }
@@ -292,7 +301,8 @@ std::shared_ptr<Component> GetExampleDesign2() {
   std::vector<std::shared_ptr<Component>> random_components;
   for (int i = 0; i < 3; i++) {
     // Another parameter for the next component.
-    auto comp = component("RandomComp" + std::to_string(i), {port("clk", bit(), Port::IN)});
+    auto comp =
+        component("RandomComp" + std::to_string(i), {port("clk", bit(), Port::IN)});
     if (std::rand() % 2 == 1) {
       comp->Add(port("o", bit(), Port::OUT));
     }
@@ -304,7 +314,7 @@ std::shared_ptr<Component> GetExampleDesign2() {
   int j = 0;
   for (int i = 0; i < 3; i++) {
     // Instantiate every random component.
-    auto inst = top->Instantiate(random_components[i]);
+    auto *inst = top->Instantiate(random_components[i]);
     Connect(inst->prt("clk"), top->prt("clk"));
     // Check if it has a port we'd also want to expose at the top-level.
     if (inst->Has("o")) {

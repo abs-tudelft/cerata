@@ -25,9 +25,7 @@
 #include "cerata/pool.h"
 #include "cerata/parameter.h"
 
-#include "cerata/vhdl/instantiation.h"
-#include "cerata/vhdl/identifier.h"
-#include "cerata/vhdl/vhdl.h"
+#include "cerata/vhdl/api.h"
 
 namespace cerata::vhdl {
 
@@ -62,10 +60,10 @@ Block Inst::GenerateGenericMap(const Parameter &par) {
   Line l;
   l << ToUpper(par.name()) << " => ";
   // Get the value to apply
-  auto val = par.value();
+  auto *val = par.value();
   // If it is a literal, make it VHDL compatible
   if (val->IsLiteral()) {
-    auto *lit = dynamic_cast<const Literal *>(val);
+    const auto *lit = dynamic_cast<const Literal *>(val);
     l << lit2vhdl(*lit);
   } else {
     l << ToUpper(val->ToString());
@@ -126,12 +124,17 @@ static Block GenerateMappingPair(const MappingPair &p,
   return ret;
 }
 
-static Block GeneratePortMappingPair(std::vector<MappingPair> pairs, const Node &a, const Node &b, bool full_array) {
+static Block GeneratePortMappingPair(std::vector<MappingPair> pairs,
+                                     const Node &a,
+                                     const Node &b,
+                                     bool full_array) {
   Block ret;
   // Sort the pair in order of appearance on the flat map
-  std::sort(pairs.begin(), pairs.end(), [](const MappingPair &x, const MappingPair &y) -> bool {
-    return x.index_a(0) < y.index_a(0);
-  });
+  std::sort(pairs.begin(),
+            pairs.end(),
+            [](const MappingPair &x, const MappingPair &y) -> bool {
+              return x.index_a(0) < y.index_a(0);
+            });
   bool a_array = false;
   bool b_array = false;
   size_t a_idx = 0;
@@ -139,11 +142,11 @@ static Block GeneratePortMappingPair(std::vector<MappingPair> pairs, const Node 
   // Figure out if these nodes are on NodeArrays and what their index is
   if (a.array()) {
     a_array = true;
-    a_idx = a.array().value()->IndexOf(a);
+    a_idx = a.array().value()->IndexOf(a).value();
   }
   if (b.array()) {
     b_array = true;
-    b_idx = b.array().value()->IndexOf(b);
+    b_idx = b.array().value()->IndexOf(b).value();
   }
   if (a.type()->meta.count(meta::FORCE_VECTOR) > 0) {
     a_array = true;
@@ -165,8 +168,16 @@ static Block GeneratePortMappingPair(std::vector<MappingPair> pairs, const Node 
         // Get the width of the right side.
         auto b_width = pair.flat_type_b(ib).type_->width();
         // Generate the mapping pair with given offsets
-        auto mpblock =
-            GenerateMappingPair(pair, ia, a_offset, ib, b_offset, a.name(), b.name(), a_array, b_array, full_array);
+        auto mpblock = GenerateMappingPair(pair,
+                                           ia,
+                                           a_offset,
+                                           ib,
+                                           b_offset,
+                                           a.name(),
+                                           b.name(),
+                                           a_array,
+                                           b_array,
+                                           full_array);
         ret << mpblock;
         // Increase the offset on the left side.
         a_offset = a_offset + (b_width ? b_width.value() : rintl(1));
@@ -188,13 +199,13 @@ Block Inst::GeneratePortMaps(const Port &port, bool full_array) {
     connections = port.sinks();
   }
   // Get the port type.
-  auto port_type = port.type();
+  auto *port_type = port.type();
   // Iterate over all connected edges
   for (const auto &edge : connections) {
     // Get the node on the other side of the connection
-    auto other = *edge->GetOtherNode(port);
+    auto *other = *edge->GetOtherNode(port);
     // Get the other type.
-    auto other_type = other->type();
+    auto *other_type = other->type();
     // Check if a type mapping exists
     auto optional_type_mapper = port_type->GetMapper(other_type);
     if (optional_type_mapper) {
@@ -204,8 +215,11 @@ Block Inst::GeneratePortMaps(const Port &port, bool full_array) {
       // Generate the mapping for this port-node pair.
       result << GeneratePortMappingPair(pairs, port, *other, full_array);
     } else {
-      CERATA_LOG(FATAL, "No type mapping available for: Port[" + port.name() + ": " + port.type()->name()
-          + "] to Other[" + other->name() + " : " + other->type()->name() + "]");
+      CERATA_LOG(FATAL,
+                 "No type mapping available for: Port[" + port.name() + ": "
+                     + port.type()->name()
+                     + "] to Other[" + other->name() + " : " + other->type()->name()
+                     + "]");
     }
   }
   return result;
@@ -221,7 +235,7 @@ Block Inst::GeneratePortArrayMaps(const PortArray &port_array) {
       if (other) {
         if (other.value()->array()) {
           if (other.value()->array().value()->IsArray()) {
-            auto na = dynamic_cast<NodeArray *>(other.value()->array().value());
+            auto *na = dynamic_cast<NodeArray *>(other.value()->array().value());
             others.push_back(na);
           }
         }
@@ -249,7 +263,7 @@ MultiBlock Inst::Generate(const Graph &graph) {
   if (!graph.IsInstance()) {
     return ret;
   }
-  auto &inst = dynamic_cast<const Instance &>(graph);
+  const auto &inst = dynamic_cast<const Instance &>(graph);
 
   Block ih(ret.indent);       // Instantiation header
   Block gmh(ret.indent + 1);  // generic map header
@@ -274,7 +288,8 @@ MultiBlock Inst::Generate(const Graph &graph) {
     gmf << gf;
   }
 
-  auto num_ports = inst.CountNodes(Node::NodeID::PORT) + inst.CountArrays(Node::NodeID::PORT);
+  auto num_ports =
+      inst.CountNodes(Node::NodeID::PORT) + inst.CountArrays(Node::NodeID::PORT);
   if (num_ports > 0) {
     // Port map
     Line ph, pf;

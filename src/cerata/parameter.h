@@ -22,27 +22,30 @@
 
 namespace cerata {
 /**
- * @brief A Parameter node.
+ * \brief A Parameter node.
  *
  * Can be used as a type generic node or as input to signal or port nodes.
  */
 class Parameter : public NormalNode {
  public:
-  /// @brief Construct a new Parameter, optionally defining a default value Literal.
-  Parameter(std::string name, const std::shared_ptr<Type> &type, std::shared_ptr<Literal> default_value);
-  /// @brief Create a copy of this Parameter.
+  /// \brief Construct a new Parameter, optionally defining a default value Literal.
+  Parameter(std::string name,
+            const std::shared_ptr<Type> &type,
+            std::shared_ptr<Literal> default_value);
+  /// \brief Create a copy of this Parameter.
   std::shared_ptr<Object> Copy() const override;
-  /// @brief Return the value node.
+  /// \brief Return the value node.
   Node *value() const;
-  /// @brief Set the value of the parameter node. Can only be expression, parameter, or literal.
-  Parameter *SetValue(const std::shared_ptr<Node> &value);
-  /// @brief Append this node and nodes that source this node's value, until an expression or literal is encountered.
+  /// \brief Set the value of the parameter node; only accepts expr, param or literal.
+  Status SetValue(const std::shared_ptr<Node> &value);
+  /// \brief Append this node and its sources until an expr or lit is encountered.
   void TraceValue(std::vector<Node *> *trace);
-  /// @brief Return the default value node.
+  /// \brief Return the default value node.
   Literal *default_value() { return default_value_.get(); }
 
   // TODO(johanpel): Work-around for parameters nodes that are size nodes of arrays.
   //  To prevent this, it requires a restructuring of node arrays.
+
   /// If this parametrizes a node array, this stores a pointer to the NodeArray.
   std::optional<NodeArray *> node_array_parent;
 
@@ -51,29 +54,29 @@ class Parameter : public NormalNode {
 };
 
 /**
- * @brief Create a new parameter.
+ * \brief Create a new parameter.
  *
- * If no default value is supplied, a default value is implicitly created based on the type.
+ * If no default value is supplied, a default value is implicitly set.
  *
- * @param name           The name of the parameter.
- * @param type           The type of the parameter.
- * @param default_value  The default value of the parameter.
- * @return               A shared pointer to a new parameter.
+ * \param name           The name of the parameter.
+ * \param type           The type of the parameter.
+ * \param default_value  The default value of the parameter.
+ * \return               A shared pointer to a new parameter.
  */
 std::shared_ptr<Parameter> parameter(const std::string &name,
                                      const std::shared_ptr<Type> &type,
                                      std::shared_ptr<Literal> default_value = nullptr);
 
-/// @brief Create a new integer-type parameter.
+/// \brief Create a new integer-type parameter.
 std::shared_ptr<Parameter> parameter(const std::string &name, int default_value);
 
-/// @brief Create a new integer-type parameter with default value 0.
+/// \brief Create a new integer-type parameter with default value 0.
 std::shared_ptr<Parameter> parameter(const std::string &name);
 
-/// @brief Create a new boolean-type parameter.
+/// \brief Create a new boolean-type parameter.
 std::shared_ptr<Parameter> parameter(const std::string &name, bool default_value);
 
-/// @brief Create a new string-type parameter.
+/// \brief Create a new string-type parameter.
 std::shared_ptr<Parameter> parameter(const std::string &name, std::string default_value);
 
 }  // namespace cerata

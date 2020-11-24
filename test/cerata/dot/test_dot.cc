@@ -14,7 +14,7 @@
 
 #include <gtest/gtest.h>
 #include <cerata/api.h>
-#include <cerata/dot/dot.h>
+#include <cerata/dot/api.h>
 
 #include "cerata/test_designs.h"
 
@@ -25,21 +25,21 @@ TEST(Dot, Component) {
   // Get component
   auto top = GetAllPortTypesComponent();
   // Generate graph
-  dot::Grapher dot;
+  dot::GraphGenerator dot;
   dot.GenFile(*top, "Dot_Component.dot");
 }
 
 TEST(Dot, Example) {
   default_component_pool()->Clear();
   auto top = GetExampleDesign();
-  dot::Grapher dot;
+  dot::GraphGenerator dot;
   dot.GenFile(*top, "Dot_Example.dot");
 }
 
 TEST(Dot, Expansion) {
   default_component_pool()->Clear();
   auto top = GetTypeExpansionComponent();
-  dot::Grapher dot;
+  dot::GraphGenerator dot;
   dot.style.config = dot::Config::all();
   dot.GenFile(*top, "Dot_Expansion.dot");
 }
@@ -47,9 +47,21 @@ TEST(Dot, Expansion) {
 TEST(Dot, ArrayToArray) {
   default_component_pool()->Clear();
   auto top = GetArrayToArrayInternalComponent();
-  dot::Grapher dot;
+  dot::GraphGenerator dot;
   dot.style.config = dot::Config::all();
   dot.GenFile(*top, "Dot_ArrayToArray.dot");
+}
+
+TEST(Dot, OutputGenerator) {
+  default_component_pool()->Clear();
+  auto top = GetExampleDesign();
+  auto og = dot::DOTOutputGenerator(std::filesystem::current_path(), {{top.get(), {}}});
+  auto status = og.Generate();
+  ASSERT_TRUE(status.ok());
+  ASSERT_TRUE(std::filesystem::exists(
+      std::filesystem::current_path() / "dot" / "top.dot"));
+  ASSERT_TRUE(std::filesystem::remove(
+      std::filesystem::current_path() / "dot" / "top.dot"));
 }
 
 }  // namespace cerata

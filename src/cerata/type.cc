@@ -46,7 +46,6 @@ std::string Type::ToString(bool show_meta, bool show_mappers) const {
       break;
     case RECORD : ret = name() + ":Rec";
       break;
-    default :throw std::runtime_error("Corrupted Type ID.");
   }
 
   if (show_meta || show_mappers) {
@@ -85,7 +84,8 @@ void Type::AddMapper(const std::shared_ptr<TypeMapper> &mapper, bool remove_exis
   if (GetMapper(other, false)) {
     if (!remove_existing) {
       CERATA_LOG(FATAL, "Mapper already exists to convert "
-                        "from " + this->ToString(true, true) + " to " + other->ToString(true, true));
+                        "from " + this->ToString(true, true) + " to "
+          + other->ToString(true, true));
     } else {
       RemoveMappersTo(other);
     }
@@ -105,16 +105,21 @@ void Type::AddMapper(const std::shared_ptr<TypeMapper> &mapper, bool remove_exis
   }
 }
 
-std::optional<std::shared_ptr<TypeMapper>> Type::GetMapper(const std::shared_ptr<Type> &other) {
-  return GetMapper(other.get());
-}
-
-std::optional<std::shared_ptr<TypeMapper>> Type::GetMapper(Type *other, bool generate_implicit) {
+OptionalTypeMapper Type::GetMapper(const Type &other) {
   // Search for an existing type mapper.
   for (const auto &m : mappers_) {
-    if (m->CanConvert(this, other)) {
+    if (m->CanConvert(this, &other)) {
       return m;
     }
+  }
+  return std::nullopt;
+}
+
+OptionalTypeMapper Type::GetMapper(Type *other, bool generate_implicit) {
+  auto opt_existing = GetMapper(*other);
+
+  if (opt_existing) {
+    return opt_existing.value();
   }
 
   if (generate_implicit) {
@@ -142,7 +147,7 @@ std::optional<std::shared_ptr<TypeMapper>> Type::GetMapper(Type *other, bool gen
   }
 
   // There is no mapper
-  return {};
+  return std::nullopt;
 }
 
 int Type::RemoveMappersTo(Type *other) {
@@ -160,7 +165,7 @@ bool Type::IsEqual(const Type &other) const {
   return other.id() == id_;
 }
 
-std::shared_ptr<Type> Type::operator()(std::vector<Node *> nodes) {
+std::shared_ptr<Type> Type::operator()(std::vector<Node *> nodes) const {
   auto generics = GetGenerics();
 
   if (nodes.size() != generics.size()) {
@@ -177,7 +182,8 @@ std::shared_ptr<Type> Type::operator()(std::vector<Node *> nodes) {
   return Copy(map);
 }
 
-std::shared_ptr<Type> Type::operator()(const std::vector<std::shared_ptr<Node>> &nodes) {
+std::shared_ptr<Type> Type::operator()(
+    const std::vector<std::shared_ptr<Node>> &nodes) const {
   return this->operator()(ToRawPointers(nodes));
 }
 
@@ -190,7 +196,8 @@ Vector::Vector(std::string name, const std::shared_ptr<Node> &width)
   width_ = width;
 }
 
-std::shared_ptr<Type> vector(const std::string &name, const std::shared_ptr<Node> &width) {
+std::shared_ptr<Type> vector(const std::string &name,
+                             const std::shared_ptr<Node> &width) {
   return std::make_shared<Vector>(name, width);
 }
 
@@ -270,7 +277,10 @@ std::optional<Node *> Bit::width() const {
 Field::Field(std::string name, std::shared_ptr<Type> type, bool reverse, bool sep)
     : Named(std::move(name)), type_(std::move(type)), reverse_(reverse), sep_(sep) {}
 
-std::shared_ptr<Field> field(const std::string &name, const std::shared_ptr<Type> &type, bool reverse, bool sep) {
+std::shared_ptr<Field> field(const std::string &name,
+                             const std::shared_ptr<Type> &type,
+                             bool reverse,
+                             bool sep) {
   return std::make_shared<Field>(name, type, reverse, sep);
 }
 
@@ -283,7 +293,8 @@ std::shared_ptr<Field> NoSep(std::shared_ptr<Field> field) {
   return field;
 }
 
-Record &Record::AddField(const std::shared_ptr<Field> &field, std::optional<size_t> index) {
+Record &Record::AddField(const std::shared_ptr<Field> &field,
+                         std::optional<size_t> index) {
   if (index) {
     auto it = fields_.begin() + *index;
     fields_.insert(it, field);
@@ -305,7 +316,8 @@ Record::Record(std::string name, std::vector<std::shared_ptr<Field>> fields)
   }
 }
 
-std::shared_ptr<Record> record(const std::string &name, const std::vector<std::shared_ptr<Field>> &fields) {
+std::shared_ptr<Record> record(const std::string &name,
+                               const std::vector<std::shared_ptr<Field>> &fields) {
   return std::make_shared<Record>(name, fields);
 }
 
@@ -317,8 +329,9 @@ std::shared_ptr<Record> record(const std::vector<std::shared_ptr<Field>> &fields
   return record(std::string(""), fields);
 }
 
-std::shared_ptr<Record> record(const std::initializer_list<std::shared_ptr<Field>> &fields) {
-  return record(std::string(""), std::vector<std::shared_ptr<Field>>(fields.begin(), fields.end()));
+std::shared_ptr<Record> record(const FieldList &fields) {
+  return record(std::string(""),
+                std::vector<std::shared_ptr<Field>>(fields.begin(), fields.end()));
 }
 
 bool Record::IsEqual(const Type &other) const {
@@ -330,14 +343,14 @@ bool Record::IsEqual(const Type &other) const {
     return false;
   }
   // Must have same number of fields
-  auto &other_record = dynamic_cast<const Record &>(other);
+  const auto &other_record = dynamic_cast<const Record &>(other);
   if (other_record.num_fields() != this->num_fields()) {
     return false;
   }
   // Each field must also be of equal type
   for (size_t i = 0; i < this->num_fields(); i++) {
-    auto a = this->at(i);
-    auto b = other_record.at(i);
+    auto *a = this->at(i);
+    auto *b = other_record.at(i);
     if (a->reversed() != b->reversed()) {
       return false;
     }
@@ -371,21 +384,15 @@ std::vector<Type *> Record::GetNested() const {
 }
 
 bool Record::IsPhysical() const {
-  for (const auto &f : fields_) {
-    if (!f->type()->IsPhysical()) {
-      return false;
-    }
-  }
-  return true;
+  return std::any_of(fields_.begin(),
+                     fields_.end(),
+                     [](const auto &f) { return !f->type()->IsPhysical(); });
 }
 
 bool Record::IsGeneric() const {
-  for (const auto &f : fields_) {
-    if (f->type()->IsGeneric()) {
-      return true;
-    }
-  }
-  return false;
+  return std::any_of(fields_.begin(),
+                     fields_.end(),
+                     [](const auto &f) { return f->type()->IsGeneric(); });
 }
 
 std::shared_ptr<Type> Bit::Copy(const NodeMap &rebinding) const {
@@ -472,22 +479,20 @@ Field *Record::at(size_t i) const {
 Field *Record::operator[](size_t i) const { return at(i); }
 
 bool Record::Has(const std::string &name) const {
-  for (const auto &field : fields_) {
-    if (field->name() == name) {
-      return true;
-    }
-  }
-  return false;
+  return std::any_of(fields_.begin(),
+                     fields_.end(),
+                     [=](const auto &f) { return f->name() == name; });
 }
 
 Field *Record::at(const std::string &name) const {
-  for (auto &f : fields_) {
+  for (const auto &f : fields_) {
     if (f->name() == name) {
       return f.get();
     }
   }
-  CERATA_LOG(ERROR, "Field with name " + name + " does not exist on Record type " + this->name()
-      + " Must one of: " + ToStringFieldNames());
+  CERATA_LOG(ERROR,
+             "Field with name " + name + " does not exist on Record type " + this->name()
+                 + " Must one of: " + ToStringFieldNames());
 }
 
 Field *Record::operator[](const std::string &name) const { return at(name); }

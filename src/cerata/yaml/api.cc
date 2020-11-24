@@ -15,22 +15,25 @@
 #include <yaml-cpp/yaml.h>
 
 #include "cerata/api.h"
-#include "cerata/yaml/yaml.h"
+#include "cerata/yaml/api.h"
 
 namespace cerata::yaml {
 
-YamlConverter::YamlConverter(const std::string &yaml, std::shared_ptr<cerata::Field> *out) {
+YamlConverter::YamlConverter(const std::string &yaml,
+                             std::shared_ptr<cerata::Field> *out) {
   this->root_ = YAML::Load(yaml);
   this->out_ = out;
 }
 
-YamlConverter::YamlConverter(const YAML::Node &root, std::shared_ptr<cerata::Field> *out) {
+YamlConverter::YamlConverter(const YAML::Node &root,
+                             std::shared_ptr<cerata::Field> *out) {
   this->root_ = root;
   this->out_ = out;
 }
 
 auto ToString(const YAML::Mark &mark) -> std::string {
-  return "Pos: " + std::to_string(mark.pos) + " Line: " + std::to_string(mark.line) + " Col:"
+  return "Pos: " + std::to_string(mark.pos) + " Line: " + std::to_string(mark.line)
+      + " Col:"
       + std::to_string(mark.column);
 }
 
@@ -42,11 +45,12 @@ auto YamlConverter::Visit(const YAML::Node &node) -> Status {
           if (item[YAML_KEY_FIELD] || item[YAML_KEY_RECORD]) {
             std::shared_ptr<cerata::Field> field;
             auto conv = YamlConverter(item, &field);
-            CERATA_ROE(conv.Convert());
+            RETURN_SERR(conv.Convert());
             fields_.push_back(field);
           } else {
-            return Status(Error::YAMLError,
-                          "Sequence can only contain \"" + std::string(YAML_KEY_FIELD) + "\" or \""
+            return Status(Err::YAML,
+                          "Sequence can only contain \"" + std::string(YAML_KEY_FIELD)
+                              + "\" or \""
                               + std::string(YAML_KEY_RECORD) + "\"");
           }
         }
@@ -57,7 +61,7 @@ auto YamlConverter::Visit(const YAML::Node &node) -> Status {
         if (node[YAML_KEY_NAME]) {
           name_ = node[YAML_KEY_NAME].as<std::string>();
         } else {
-          return Status(Error::YAMLError, "Field must have \"name\"");
+          return Status(Err::YAML, "Field must have \"name\"");
         }
         if (node[YAML_KEY_WIDTH]) {
           width_ = node[YAML_KEY_WIDTH].as<unsigned int>();
@@ -70,30 +74,32 @@ auto YamlConverter::Visit(const YAML::Node &node) -> Status {
         }
         if (node[YAML_KEY_FIELDS] && (width_ == 0)) {
           auto fields = node[YAML_KEY_FIELDS];
-          CERATA_ROE(Visit(node[YAML_KEY_FIELDS]));
+          RETURN_SERR(Visit(node[YAML_KEY_FIELDS]));
         } else if (node[YAML_KEY_FIELDS] && (width_ > 0)) {
-          return Status(Error::YAMLError, "Field " + name_ + " cannot have both width and subfields.");
+          return Status(Err::YAML,
+                        "Field " + name_ + " cannot have both width and subfields.");
         } else if (!node[YAML_KEY_WIDTH]) {
-          return Status(Error::YAMLError, "Field " + name_ + " must have either width or subfields.");
+          return Status(Err::YAML,
+                        "Field " + name_ + " must have either width or subfields.");
         }
         break;
       }
 
         // Some nodes we should never encounter through this visitor.
       case YAML::NodeType::Undefined: {
-        return Status(Error::YAMLError,
+        return Status(Err::YAML,
                       "Unexpected undefined at " + std::to_string(node.Mark().line) + ":"
                           + std::to_string(node.Mark().column));
       }
       case YAML::NodeType::Null: {
-        return Status(Error::YAMLError, "Unexpected null at " + ToString(node.Mark()));
+        return Status(Err::YAML, "Unexpected null at " + ToString(node.Mark()));
       }
       case YAML::NodeType::Scalar: {
-        return Status(Error::YAMLError, "Unexpected scalar at " + ToString(node.Mark()));
+        return Status(Err::YAML, "Unexpected scalar at " + ToString(node.Mark()));
       }
     }
   } catch (const YAML::Exception &e) {
-    return Status(Error::YAMLError, "YAML parsing error: " + std::string(e.msg));
+    return Status(Err::YAML, "YAML parsing error: " + std::string(e.msg));
   }
   return Status::OK();
 }
@@ -109,7 +115,7 @@ auto YamlConverter::Convert() -> Status {
     } else if (width_ > 0) {
       *out_ = cerata::field(name_, cerata::bit(name_), reverse_);
     } else {
-      return Status(Error::YAMLError, "Width for " + name_ + " must be greater than 0.");
+      return Status(Err::YAML, "Width for " + name_ + " must be greater than 0.");
     }
   } else {
     *out_ = cerata::field(name_, cerata::record(name_, {fields_}), reverse_);

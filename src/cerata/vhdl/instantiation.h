@@ -30,13 +30,13 @@ namespace cerata::vhdl {
 
 /// Functions to generate VHDL instantiation code.
 struct Inst {
-  /// @brief Generate a VHDL instantiation of a graph.
+  /// \brief Generate a VHDL instantiation of a graph.
   static MultiBlock Generate(const Graph &graph);
-  /// @brief Generate an associativity list for an instantiated Port.
+  /// \brief Generate an associativity list for an instantiated Port.
   static Block GeneratePortMaps(const Port &port, bool full_array = false);
-  /// @brief Generate an associativity list for an instantiated PortArray.
+  /// \brief Generate an associativity list for an instantiated PortArray.
   static Block GeneratePortArrayMaps(const PortArray &array);
-  /// @brief Generate an associativity list for an instantiated Parameter.
+  /// \brief Generate an associativity list for an instantiated Parameter.
   static Block GenerateGenericMap(const Parameter &par);
 };
 

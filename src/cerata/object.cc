@@ -15,7 +15,6 @@
 #include "cerata/object.h"
 
 #include <memory>
-#include <sstream>
 
 #include "cerata/utils.h"
 #include "cerata/graph.h"

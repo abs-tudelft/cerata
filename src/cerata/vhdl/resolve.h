@@ -23,7 +23,7 @@ namespace cerata::vhdl {
 /// Functions to resolve VHDL-specific problems with graphs.
 struct Resolve {
   /**
-   * @brief Transforms the component, inserting signals for every instance port.
+   * \brief Transforms the component, inserting signals for every instance port.
    *
    * Many things are terrible in VHDL when it comes to instance ports.
    * - We cannot have port-to-port connections of instances.
@@ -38,8 +38,8 @@ struct Resolve {
    * through the signals. This generates a massive amount of signals, but hey, at least I haven't thrown myself out of
    * a window yet.
    *
-   * @param comp  The component to transform.
-   * @return      The transformed component.
+   * \param comp  The component to transform.
+   * \return      The transformed component.
    */
   // TODO(johanpel): this should create a transformed copy, but currently mutates the component.
   static Component *SignalizePorts(Component *comp);

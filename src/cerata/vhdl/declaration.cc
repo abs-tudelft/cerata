@@ -25,31 +25,31 @@
 #include "cerata/graph.h"
 #include "cerata/vhdl/identifier.h"
 #include "cerata/vhdl/vhdl_types.h"
-#include "cerata/vhdl/vhdl.h"
+#include "cerata/vhdl/api.h"
 
 namespace cerata::vhdl {
 
 static std::string GenerateTypeDecl(const Type &type, std::optional<Node *> multiplier = std::nullopt) {
-  std::shared_ptr<Node> mult;
+  std::shared_ptr<Node> mul;
   if (multiplier) {
-    mult = multiplier.value()->shared_from_this();
+    mul = multiplier.value()->shared_from_this();
   }
   switch (type.id()) {
     default: {
       if (!multiplier) {
         return "std_logic";
       } else {
-        return "std_logic_vector(" + ToUpper((mult - 1)->ToString()) + " downto 0)";
+        return "std_logic_vector(" + ToUpper((mul - 1)->ToString()) + " downto 0)";
       }
     }
     case Type::VECTOR: {
-      auto &vec = dynamic_cast<const Vector &>(type);
+      const auto &vec = dynamic_cast<const Vector &>(type);
       auto width = vec.width().value()->shared_from_this();
       if (!multiplier) {
         auto expr = width->shared_from_this() - 1;
         return "std_logic_vector(" + ToUpper(expr->ToString()) + " downto 0)";
       } else {
-        auto expr = mult * width - 1;
+        auto expr = mul * width - 1;
         return "std_logic_vector(" + ToUpper(expr->ToString()) + " downto 0)";
       }
     }

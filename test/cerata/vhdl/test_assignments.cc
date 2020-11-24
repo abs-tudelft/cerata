@@ -15,7 +15,7 @@
 #include <gmock/gmock.h>
 
 #include <cerata/api.h>
-#include <cerata/vhdl/vhdl.h>
+#include <cerata/vhdl/api.h>
 
 #include "cerata/test_designs.h"
 
@@ -58,8 +58,8 @@ TEST(VHDL_ASSIGN, SignalRecordArray) {
   auto size = intl(0);
   auto rec = record({field("x", vector(8)),
                      field("y", bit())});
-  auto a = signal_array("a", rec, size);
-  auto b = signal_array("b", rec, size);
+  auto a = SignalArray::Make("a", rec, size).value();
+  auto b = SignalArray::Make("b", rec, size).value();
 
   Connect(a->Append(), b->Append());
   Connect(a->Append(), b->Append());
@@ -79,8 +79,8 @@ TEST(VHDL_ASSIGN, SignalRecordArrayParam) {
   auto b_size = parameter("B_SIZE", integer(), intl(0));
   auto rec = record({field("x", vector(8)),
                      field("y", bit())});
-  auto a = signal_array("a", rec, a_size);
-  auto b = signal_array("b", rec, b_size);
+  auto a = SignalArray::Make("a", rec, a_size).value();
+  auto b = SignalArray::Make("b", rec, b_size).value();
 
   auto a0 = a->Append();
   auto a1 = a->Append();
@@ -105,8 +105,8 @@ TEST(VHDL_ASSIGN, SignalRecordParamArrayParam) {
   auto width = parameter("WIDTH", integer(), intl(8));
   auto rec = record({field("x", vector(width)),
                      field("y", bit())});
-  auto a = signal_array("a", rec, a_size);
-  auto b = signal_array("b", rec, b_size);
+  auto a = SignalArray::Make("a", rec, a_size).value();
+  auto b = SignalArray::Make("b", rec, b_size).value();
 
   Connect(a->Append(), b->Append());
   Connect(a->Append(), b->Append());

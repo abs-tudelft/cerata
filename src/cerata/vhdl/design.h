@@ -19,7 +19,7 @@
 #include <utility>
 
 #include "cerata/graph.h"
-#include "cerata/vhdl/vhdl.h"
+#include "cerata/vhdl/api.h"
 #include "cerata/vhdl/block.h"
 #include "cerata/vhdl/defaults.h"
 
@@ -34,18 +34,20 @@ struct Design {
   /// Libraries to place after the header.
   std::string libs_;
 
-  /// @brief Design constructor.
-  explicit Design(Component *component, std::string notice = "", std::string header = DEFAULT_LIBS)
+  /// \brief Design constructor.
+  explicit Design(Component *component,
+                  std::string notice = "",
+                  std::string header = DEFAULT_LIBS)
       : component_(component), notice_(std::move(notice)), libs_(std::move(header)) {}
 
-  /// @brief Design constructor.
+  /// \brief Design constructor.
   explicit Design(const std::shared_ptr<Component> &component,
                   std::string notice = "",
                   std::string header = DEFAULT_LIBS)
       : Design(component.get(), std::move(notice), std::move(header)) {}
 
-  /// @brief Generate the design VHDL code.
-  MultiBlock Generate();
+  /// \brief Generate the design VHDL code.
+  [[nodiscard]] MultiBlock Generate() const;
 };
 
 }  // namespace cerata::vhdl

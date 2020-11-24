@@ -14,17 +14,14 @@
 
 #include "cerata/vhdl/resolve.h"
 
-#include <memory>
-#include <vector>
 #include <string>
 #include <unordered_map>
 
 #include "cerata/logging.h"
-#include "cerata/type.h"
 #include "cerata/graph.h"
 #include "cerata/edge.h"
 #include "cerata/vhdl/vhdl_types.h"
-#include "cerata/vhdl/vhdl.h"
+#include "cerata/vhdl/api.h"
 
 namespace cerata::vhdl {
 
@@ -43,11 +40,11 @@ static int ResolvePorts(Component *comp, Instance *inst, NodeMap *rebinding) {
 }
 
 /**
- * @brief Resolve VHDL-specific limitations in a Cerata graph related to ports.
- * @param comp      The component to resolve the limitations for.
- * @param inst      The instance to resolve it for.
- * @param resolved  A vector to append resolved objects to.
- * @param rebinding A map with type generic node rebindings.
+ * \brief Resolve VHDL-specific limitations in a Cerata graph related to ports.
+ * \param comp      The component to resolve the limitations for.
+ * \param inst      The instance to resolve it for.
+ * \param resolved  A vector to append resolved objects to.
+ * \param rebinding A map with type generic node rebindings.
  */
 static int ResolvePortArrays(Component *comp, Instance *inst, NodeMap *rebinding) {
   // There is something utterly annoying in VHDL; range expressions must be "locally static" in port map

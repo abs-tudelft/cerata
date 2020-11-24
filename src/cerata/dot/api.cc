@@ -12,10 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "cerata/dot/dot.h"
+#include "cerata/dot/api.h"
 
 #include <sstream>
 
+#include "cerata/errors.h"
 #include "cerata/logging.h"
 #include "cerata/edge.h"
 #include "cerata/type.h"
@@ -26,15 +27,18 @@
 
 namespace cerata::dot {
 
-void DOTOutputGenerator::Generate() {
-  CreateDir(root_dir_ + "/" + subdir());
-  cerata::dot::Grapher dot;
+Status DOTOutputGenerator::Generate() {
+  auto path = root_ / subdir();
+  RETURN_SERR(CreateDir(path));
+  cerata::dot::GraphGenerator dot;
   for (const auto &o : outputs_) {
+    auto file = path / (o.comp->name() + ".dot");
     if (o.comp != nullptr) {
       CERATA_LOG(DEBUG, "DOT: Generating output for Graph: " + o.comp->name());
-      dot.GenFile(*o.comp, root_dir_ + "/" + subdir() + "/" + o.comp->name() + ".dot");
+      dot.GenFile(*o.comp, file);
     }
   }
+  return Status::OK();
 }
 
 static std::string ToHex(const Node &n) {
@@ -43,7 +47,7 @@ static std::string ToHex(const Node &n) {
   return ret.str();
 }
 
-std::string Grapher::GenEdges(const Graph &graph, int level) {
+std::string GraphGenerator::GenEdges(const Graph &graph, int level) {
   std::stringstream ret;
   auto all_edges = GetAllEdges(graph);
   for (const auto &e : all_edges) {
@@ -52,8 +56,8 @@ std::string Grapher::GenEdges(const Graph &graph, int level) {
       drawn_edges.push_back(e);
 
       // Check if edge is complete
-      auto dst = e->dst();
-      auto src = e->src();
+      auto *dst = e->dst();
+      auto *src = e->src();
       if ((dst == nullptr) || (src == nullptr)) {
         continue;
       }
@@ -66,14 +70,15 @@ std::string Grapher::GenEdges(const Graph &graph, int level) {
       // Draw edge
       ret << tab(level);
       if (src->IsExpression() && style.config.nodes.expand.expression) {
-        auto srcname = ToHex(*src);
+        auto src_name = ToHex(*src);
         ret << " -> ";
         ret << NodeName(*dst);
-        ret << "\"" + srcname + "\"";
+        ret << "\"" + src_name + "\"";
         draw_style = true;
-      } else if ((src->IsParameter() && style.config.nodes.parameters) || !src->IsParameter()) {
-        auto srcname = NodeName(*src);
-        ret << srcname;
+      } else if ((src->IsParameter() && style.config.nodes.parameters)
+          || !src->IsParameter()) {
+        auto src_name = NodeName(*src);
+        ret << src_name;
         ret << " -> ";
         ret << NodeName(*dst);
         draw_style = true;
@@ -92,14 +97,17 @@ std::string Grapher::GenEdges(const Graph &graph, int level) {
 
         // Put array index label
         if (src->array() && !dst->array()) {
-          sb << "label=\"" + std::to_string((*src->array())->IndexOf(*src)) + "\"";
+          sb << "label=\"" + std::to_string((*src->array())->IndexOf(*src).value())
+              + "\"";
         }
         if (!src->array() && dst->array()) {
-          sb << "label=\"" + std::to_string((*dst->array())->IndexOf(*dst)) + "\"";
+          sb << "label=\"" + std::to_string((*dst->array())->IndexOf(*dst).value())
+              + "\"";
         }
         if (src->array() && dst->array()) {
-          sb << "label=\"" + std::to_string((*src->array())->IndexOf(*src)) + " to "
-              + std::to_string((*dst->array())->IndexOf(*dst)) + "\"";
+          sb << "label=\"" + std::to_string((*src->array())->IndexOf(*src).value())
+              + " to "
+              + std::to_string((*dst->array())->IndexOf(*dst).value()) + "\"";
         }
 
         if ((src->IsPort()) && style.config.nodes.ports) {
@@ -210,7 +218,7 @@ std::string Style::GenDotRecordCell(const Type &t,
   return str.str();
 }
 
-std::string Grapher::GenNode(const Node &n, int level) {
+std::string GraphGenerator::GenNode(const Node &n, int level) {
   std::stringstream str;
   if (n.IsExpression() && style.config.nodes.expand.expression) {
     str << GenExpr(n);
@@ -226,13 +234,17 @@ std::string Grapher::GenNode(const Node &n, int level) {
   return str.str();
 }
 
-std::string Grapher::GenNodes(const Graph &graph, Node::NodeID id, int level, bool no_group) {
+std::string GraphGenerator::GenNodes(const Graph &graph,
+                                     Node::NodeID id,
+                                     int level,
+                                     bool no_group) {
   std::stringstream ret;
   auto nodes = graph.GetNodesOfType(id);
   auto arrays = graph.GetArraysOfType(id);
   if (!nodes.empty() || !arrays.empty()) {
     if (!no_group) {
-      ret << tab(level) << "subgraph cluster_" << sanitize(graph.name()) + "_" + ToString(id) << " {\n";
+      ret << tab(level) << "subgraph cluster_"
+          << sanitize(graph.name()) + "_" + ToString(id) << " {\n";
       // ret << tab(level + 1) << "label=\"" << ToString(id) << "s\";\n";
       ret << tab(level + 1) << "rankdir=LR;\n";
       ret << tab(level + 1) << "label=\"\";\n";
@@ -252,7 +264,7 @@ std::string Grapher::GenNodes(const Graph &graph, Node::NodeID id, int level, bo
   return ret.str();
 }
 
-std::string Grapher::GenGraph(const Graph &graph, int level) {
+std::string GraphGenerator::GenGraph(const Graph &graph, int level) {
   std::stringstream ret;
 
   // (sub)graph header
@@ -288,7 +300,7 @@ std::string Grapher::GenGraph(const Graph &graph, int level) {
     ret << GenNodes(graph, Node::NodeID::SIGNAL, level + 1, true);
 
   if (graph.IsComponent()) {
-    auto &comp = dynamic_cast<const Component &>(graph);
+    const auto &comp = dynamic_cast<const Component &>(graph);
     if (!comp.children().empty()) {
       ret << "\n";
     }
@@ -307,15 +319,18 @@ std::string Grapher::GenGraph(const Graph &graph, int level) {
   return ret.str();
 }
 
-std::string Grapher::GenFile(const Graph &graph, const std::string &path) {
+Status GraphGenerator::GenFile(const Graph &graph,
+                               const std::filesystem::path &path) {
   std::string dot = GenGraph(graph);
   std::ofstream out(path);
   out << dot;
   out.close();
-  return dot;
+  return Status::OK();
 }
 
-std::string Grapher::GenExpr(const Node &node, const std::string &prefix, int level) {
+std::string GraphGenerator::GenExpr(const Node &node,
+                                    const std::string &prefix,
+                                    int level) {
   std::stringstream str;
 
   std::string node_id;

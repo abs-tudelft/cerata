@@ -29,45 +29,47 @@
 namespace cerata {
 
 /**
- * @brief A node representing a binary tree of other nodes.
+ * \brief A node representing a binary tree of other nodes.
  */
 class Expression : public MultiOutputNode {
  public:
   /// Binary expression operator enum class
   enum class Op { ADD, SUB, MUL, DIV };
 
-  /// @brief Short-hand to create a smart pointer to an expression.
-  static std::shared_ptr<Expression> Make(Op op, std::shared_ptr<Node> lhs, std::shared_ptr<Node> rhs);
+  /// \brief Short-hand to create a smart pointer to an expression.
+  static std::shared_ptr<Expression> Make(Op op,
+                                          std::shared_ptr<Node> lhs,
+                                          std::shared_ptr<Node> rhs);
 
-  /// @brief Copy this expression.
+  /// \brief Copy this expression.
   std::shared_ptr<Object> Copy() const override;
 
-  /// @brief Copy this expression onto a graph and rebind anything in the expression tree.
+  /// \brief Copy this expression onto a graph and rebind anything in the expression tree.
   Node *CopyOnto(Graph *dst, const std::string &name, NodeMap *rebinding) const override;
-  /// @brief Depth-first traverse the expression tree and add any nodes owned.
+  /// \brief Depth-first traverse the expression tree and add any nodes owned.
   void AppendReferences(std::vector<Object *> *out) const override;
 
-  /// @brief Minimize the expression and convert it to a human-readable string.
+  /// \brief Minimize the expression and convert it to a human-readable string.
   std::string ToString() const override;
 
-  /// @brief Return the left-hand side node of the expression.
+  /// \brief Return the left-hand side node of the expression.
   Node *lhs() const { return lhs_.get(); }
-  /// @brief Return the right-hand side node of the expression.
+  /// \brief Return the right-hand side node of the expression.
   Node *rhs() const { return rhs_.get(); }
 
  protected:
-  /// @brief Minimize a node, if it is an expression, otherwise just returns a copy of the input.
+  /// \brief Minimize if node is an expression, else returns a copy of the input.
   static std::shared_ptr<Node> Minimize(Node *node);
-  /// @brief Merge expressions of integer literals into their resulting integer literal.
+  /// \brief Merge expressions of integer literals into their resulting integer literal.
   static std::shared_ptr<Node> MergeIntLiterals(Expression *exp);
-  /// @brief Eliminate nodes that have zero or one on either side for specific expressions.
+  /// \brief Eliminate nodes that have zero/one on either side for specific expressions.
   static std::shared_ptr<Node> EliminateZeroOne(Expression *exp);
 
   /**
-  * @brief Construct a new expression
-  * @param op  The operator between two operands
-  * @param lhs The left operand
-  * @param rhs The right operand
+  * \brief Construct a new expression
+  * \param op  The operator between two operands
+  * \param lhs The left operand
+  * \param rhs The right operand
   */
   Expression(Op op, std::shared_ptr<Node> lhs, std::shared_ptr<Node> rhs);
 
@@ -79,7 +81,7 @@ class Expression : public MultiOutputNode {
   std::shared_ptr<Node> rhs_;
 };
 
-/// @brief Human-readable expression operator.
+/// \brief Human-readable expression operator.
 std::string ToString(Expression::Op operation);
 
 // Macros to generate expression generators

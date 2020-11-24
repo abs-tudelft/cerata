@@ -24,20 +24,20 @@ namespace cerata::vhdl {
 
 /// Architecture generators.
 struct Arch {
-  /// @brief Generate the VHDL architecture of a component.
+  /// \brief Generate the VHDL architecture of a component.
   static MultiBlock Generate(const Component &comp);
-  /// @brief Generate the VHDL signal assignments.
+  /// \brief Generate the VHDL signal assignments.
   static Block Generate(const Signal &sig, int indent = 0);
-  /// @brief Generate the VHDL port assignments.
+  /// \brief Generate the VHDL port assignments.
   static Block Generate(const Port &port, int indent = 0);
-  /// @brief Generate the VHDL signal array assignments inside a component.
+  /// \brief Generate the VHDL signal array assignments inside a component.
   static Block Generate(const SignalArray &sig_array, int indent = 0);
-  /// @brief Generate component declarations within VHDL architecture declarations block.
+  /// \brief Generate component declarations within VHDL architecture declarations block.
   static MultiBlock GenerateCompDeclarations(const Component &comp, int indent = 0);
-  /// @brief Generate component instantiations within VHDL architecture concurrent statements block.
+  /// \brief Generate component instantiations within VHDL architecture concurrent statements block.
   static MultiBlock GenerateCompInstantiations(const Component &comp, int indent = 0);
 
-  /// @brief Generate relevant VHDL component declarations of all Cerata instances.
+  /// \brief Generate relevant VHDL component declarations of all Cerata instances.
   template<typename T>
   static Block GenerateNodeDeclarations(const Component &comp, int indent = 0) {
     Block result(indent);
@@ -52,7 +52,7 @@ struct Arch {
     return result.AppendBlankLineIfNotEmpty();
   }
 
-  /// @brief Generate relevant VHDL signal assignments of all Cerata nodes.
+  /// \brief Generate relevant VHDL signal assignments of all Cerata nodes.
   template<typename T>
   static Block GenerateAssignments(const Component &comp, int indent = 0) {
     Block result(indent);

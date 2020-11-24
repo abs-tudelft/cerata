@@ -17,7 +17,7 @@
 #include <memory>
 #include <vector>
 
-#include "cerata/vhdl/vhdl.h"
+#include "cerata/vhdl/api.h"
 #include "cerata/type.h"
 
 namespace cerata::vhdl {
@@ -63,7 +63,7 @@ std::vector<FlatType> FilterForVHDL(const std::vector<FlatType> &list) {
   return result;
 }
 
-std::string Range::ToString() {
+std::string Range::ToString() const {
   if (type == SINGLE) {
     return "(" + bottom + ")";
   } else if (type == MULTI) {

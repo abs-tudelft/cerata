@@ -14,6 +14,7 @@
 
 #pragma once
 
+#include <filesystem>
 #include <unordered_map>
 #include <vector>
 #include <utility>
@@ -24,7 +25,7 @@
 
 namespace cerata {
 
-/// @brief Structure to specify output properties per graph
+/// \brief Structure to specify output properties per graph
 struct OutputSpec {
   /// The component to output.
   Component *comp;
@@ -33,26 +34,27 @@ struct OutputSpec {
 };
 
 /**
- * @brief Abstract class to generate language specific output from Graphs
+ * \brief Abstract class to generate language specific output from Graphs
  */
 class OutputGenerator {
  public:
-  /// @brief Construct an OutputGenerator.
-  explicit OutputGenerator(std::string root_dir, std::vector<OutputSpec> outputs = {});
+  /// \brief Construct an OutputGenerator.
+  explicit OutputGenerator(std::filesystem::path root,
+                           std::vector<OutputSpec> outputs = {});
 
-  /// @brief Add a graph to the list of graphs to generate output for.
+  /// \brief Add a graph to the list of graphs to generate output for.
   OutputGenerator &AddOutput(const OutputSpec &output);
 
-  /// @brief Start the output generation.
-  virtual void Generate() = 0;
+  /// \brief Start the output generation.
+  virtual Status Generate() = 0;
 
-  /// @brief Return the subdirectory this OutputGenerator will generate into.
+  /// \brief Return the subdirectory this OutputGenerator will generate into.
   virtual std::string subdir() = 0;
 
  protected:
-  /// @brief The root directory to generate the output in.
-  std::string root_dir_;
-  /// @brief A list of things to put out.
+  /// \brief The root directory to generate the output in.
+  std::filesystem::path root_;
+  /// \brief A list of things to put out.
   std::vector<OutputSpec> outputs_;
 };
 

@@ -26,7 +26,7 @@
 #include "cerata/vhdl/block.h"
 #include "cerata/vhdl/declaration.h"
 #include "cerata/vhdl/instantiation.h"
-#include "cerata/vhdl/vhdl.h"
+#include "cerata/vhdl/api.h"
 
 namespace cerata::vhdl {
 
@@ -37,7 +37,8 @@ MultiBlock Arch::GenerateCompDeclarations(const Component &comp, int indent) {
   for (const auto &ic : inst_comps) {
     // Check for metadata that this component is not marked primitive
     // In this case, a library package has been added at the top of the design file.
-    if ((ic->meta().count(meta::PRIMITIVE) == 0) || (ic->meta().at(meta::PRIMITIVE) != "true")) {
+    if ((ic->meta().count(meta::PRIMITIVE) == 0)
+        || (ic->meta().at(meta::PRIMITIVE) != "true")) {
       // TODO(johanpel): generate packages with component declarations
       auto decl = Decl::Generate(*ic);
       result << decl;
@@ -113,7 +114,8 @@ static Block GenerateMappingPair(const MappingPair &p,
     // if right side is concatenated onto the left side
     // or the left side is an array (right is also concatenated onto the left side)
     if ((p.num_b() > 1) || a_is_array) {
-      if (a_ft.type_->Is(Type::BIT) || (b_ft.type_->Is(Type::BIT) && a_ft.type_->Is(Type::VECTOR))) {
+      if (a_ft.type_->Is(Type::BIT)
+          || (b_ft.type_->Is(Type::BIT) && a_ft.type_->Is(Type::VECTOR))) {
         a += "(" + offset_a->ToString() + ")";
       } else {
         a += "(" + (next_offset_a - 1ul)->ToString();
@@ -122,7 +124,8 @@ static Block GenerateMappingPair(const MappingPair &p,
     }
     b = b_ft.name(NamePart(rh_prefix, true));
     if ((p.num_a() > 1) || b_is_array) {
-      if (b_ft.type_->Is(Type::BIT) || (a_ft.type_->Is(Type::BIT) && b_ft.type_->Is(Type::VECTOR))) {
+      if (b_ft.type_->Is(Type::BIT)
+          || (a_ft.type_->Is(Type::BIT) && b_ft.type_->Is(Type::VECTOR))) {
         b += "(" + offset_b->ToString() + ")";
       } else {
         b += "(" + (next_offset_b - 1ul)->ToString();
@@ -141,12 +144,16 @@ static Block GenerateMappingPair(const MappingPair &p,
   return ret;
 }
 
-static Block GenerateAssignmentPair(std::vector<MappingPair> pairs, const Node &a, const Node &b) {
+static Block GenerateAssignmentPair(std::vector<MappingPair> pairs,
+                                    const Node &a,
+                                    const Node &b) {
   Block ret;
   // Sort the pair in order of appearance on the flatmap
-  std::sort(pairs.begin(), pairs.end(), [](const MappingPair &x, const MappingPair &y) -> bool {
-    return x.index_a(0) < y.index_a(0);
-  });
+  std::sort(pairs.begin(),
+            pairs.end(),
+            [](const MappingPair &x, const MappingPair &y) -> bool {
+              return x.index_a(0) < y.index_a(0);
+            });
   bool a_array = false;
   bool b_array = false;
   size_t a_idx = 0;
@@ -154,11 +161,11 @@ static Block GenerateAssignmentPair(std::vector<MappingPair> pairs, const Node &
   // Figure out if these nodes are on NodeArrays and what their index is
   if (a.array()) {
     a_array = true;
-    a_idx = a.array().value()->IndexOf(a);
+    a_idx = a.array().value()->IndexOf(a).value();
   }
   if (b.array()) {
     b_array = true;
-    b_idx = b.array().value()->IndexOf(b);
+    b_idx = b.array().value()->IndexOf(b).value();
   }
   // Loop over all pairs
   for (const auto &pair : pairs) {
@@ -174,7 +181,15 @@ static Block GenerateAssignmentPair(std::vector<MappingPair> pairs, const Node &
         // Get the width of the right side.
         auto b_width = pair.flat_type_b(ib).type_->width();
         // Generate the mapping pair with given offsets
-        auto mpblock = GenerateMappingPair(pair, ia, a_offset, ib, b_offset, a.name(), b.name(), a_array, b_array);
+        auto mpblock = GenerateMappingPair(pair,
+                                           ia,
+                                           a_offset,
+                                           ib,
+                                           b_offset,
+                                           a.name(),
+                                           b.name(),
+                                           a_array,
+                                           b_array);
         ret << mpblock;
         // Increase the offset on the left side.
         a_offset = a_offset + (b_width ? b_width.value() : rintl(1));
@@ -198,8 +213,10 @@ static Block GenerateNodeAssignment(const Node &dst, const Node &src) {
     result << GenerateAssignmentPair(pairs, dst, src);
     result << ";";
   } else {
-    CERATA_LOG(FATAL, "No type mapping available for: Node[" + dst.name() + ": " + dst.type()->name()
-        + "] from Other[" + src.name() + " : " + src.type()->name() + "]");
+    CERATA_LOG(FATAL,
+               "No type mapping available for: Node[" + dst.name() + ": "
+                   + dst.type()->name()
+                   + "] from Other[" + src.name() + " : " + src.type()->name() + "]");
   }
   return result;
 }
@@ -214,7 +231,7 @@ Block Arch::Generate(const Port &port, int indent) {
     return ret;
   }
   // Generate the assignment.
-  auto edge = port.input().value();
+  auto *edge = port.input().value();
   if (!edge->src()->IsSignal()) {
     CERATA_LOG(FATAL, "Component port is not sourced by signal.");
   }
@@ -232,7 +249,7 @@ Block Arch::Generate(const Signal &sig, int indent) {
   if (!sig.input()) {
     return ret;
   }
-  auto edge = sig.input().value();
+  auto *edge = sig.input().value();
   Block b;
   Node *src = edge->src();
   Node *dst = edge->dst();

@@ -25,24 +25,24 @@
 namespace cerata::vhdl {
 
 /**
- * @brief A VHDL Identifier convenience structure.
+ * \brief A VHDL Identifier convenience structure.
  */
 class Identifier {
  public:
   Identifier() = default;
-  /// @brief Construct an identifier from a bunch of strings.
+  /// \brief Construct an identifier from a bunch of strings.
   Identifier(std::initializer_list<std::string> parts, std::optional<char> sep = '_');
-  /// @brief Construct an identifier from a bunch of strings.
+  /// \brief Construct an identifier from a bunch of strings.
   explicit Identifier(std::deque<std::string> parts, std::optional<char> sep = '_');
-  /// @brief Append a part to the Identifier.
+  /// \brief Append a part to the Identifier.
   Identifier &append(const std::string &part);
-  /// @brief Append a part to the Identifier.
+  /// \brief Append a part to the Identifier.
   Identifier &prepend(const std::string &part);
-  /// @brief Append a part to the Identifier.
+  /// \brief Append a part to the Identifier.
   Identifier &operator+=(const std::string &rhs);
-  /// @brief Create a copy and add a new part to the Identifier.
+  /// \brief Create a copy and add a new part to the Identifier.
   Identifier operator+(const std::string &rhs) const;
-  /// @brief Return a human-readable string of the identifier.
+  /// \brief Return a human-readable string of the identifier.
   [[nodiscard]] std::string ToString() const;
  private:
   /// The separator character between different parts of the identifier.

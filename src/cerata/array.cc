@@ -20,6 +20,7 @@
 #include <memory>
 #include <string>
 
+#include "cerata/errors.h"
 #include "cerata/edge.h"
 #include "cerata/node.h"
 #include "cerata/expression.h"
@@ -29,50 +30,62 @@
 
 namespace cerata {
 
-static std::shared_ptr<Node> IncrementNode(Node *node) {
+Result<std::shared_ptr<Node>> IncrementNode(Node *node) {
   if (node->IsLiteral() || node->IsExpression()) {
     return node->shared_from_this() + 1;
   } else if (node->IsParameter()) {
-    // If the node is a parameter, we should be able to trace its source back to a literal node.
-    // We then replace the last parameter node in the trace by a copy and source the copy from an incremented literal.
-    auto param = dynamic_cast<Parameter *>(node);
+    // If the node is a parameter, we should be able to trace its source back to a literal
+    // node. We then replace the last parameter node in the trace by a copy and source the
+    // copy from an incremented literal.
+    auto *param = dynamic_cast<Parameter *>(node);
     // Initialize the trace with the parameter node.
     std::vector<Node *> value_trace;
     param->TraceValue(&value_trace);
     // Sanity check the trace.
     if (!value_trace.back()->IsLiteral()) {
-      CERATA_LOG(FATAL, "Parameter node " + param->ToString() + " not (indirectly) sourced by literal.");
+      return error(Err::Node,
+                   "Parameter node " + param->ToString()
+                       + " not (indirectly) sourced by literal.");
     }
     // The second-last node is of importance, because this is the final parameter node.
-    auto second_last = value_trace[value_trace.size() - 2];
+    auto *second_last = value_trace[value_trace.size() - 2];
     auto incremented = value_trace.back()->shared_from_this() + 1;
-    // Source the second last node with whatever literal was at the end of the trace, plus one.
-    Connect(second_last, incremented);
+    // Source the second last node with whatever literal was at the end of the trace,
+    // plus one.
+    auto edge = Connect(second_last, incremented);
+    if (!edge) { return error(Err::Node, edge.error().msg()); }
     return node->shared_from_this();
   } else {
-    CERATA_LOG(FATAL, "Can only increment literal, expression or parameter size node " + node->ToString());
+    return error(Err::Node,
+                 "Can only increment literal, expression or parameter size node "
+                     + node->ToString());
   }
 }
 
-void NodeArray::SetSize(const std::shared_ptr<Node> &size) {
+Status NodeArray::SetSize(const std::shared_ptr<Node> &size) {
   if (!(size->IsLiteral() || size->IsParameter() || size->IsExpression())) {
-    CERATA_LOG(FATAL, "NodeArray size node must be literal, parameter or expression.");
+    return Status(Err::Node,
+                  "NodeArray size node must be literal, parameter or expression.");
   }
   if (size->IsParameter()) {
-    auto param = size->AsParameter();
+    auto *param = size->AsParameter();
     if (param->node_array_parent) {
-      auto na = size->AsParameter()->node_array_parent.value();
+      auto *na = size->AsParameter()->node_array_parent.value();
       if (na != this) {
-        CERATA_LOG(FATAL, "NodeArray size can only be used by a single NodeArray.");
+        return Status(Err::Node,
+                      "NodeArray size can only be used by a single NodeArray.");
       }
     }
     param->node_array_parent = this;
   }
   size_ = size;
+  return Status::OK();
 }
 
-void NodeArray::IncrementSize() {
-  SetSize(IncrementNode(size()));
+Status NodeArray::IncrementSize() {
+  auto result = IncrementNode(size());
+  RETURN_SERR(status(result));
+  return SetSize(result.value());
 }
 
 std::shared_ptr<Node> NodeArray::Append(bool increment_size) {
@@ -86,7 +99,12 @@ std::shared_ptr<Node> NodeArray::Append(bool increment_size) {
 
   // Increment this NodeArray's size node.
   if (increment_size) {
-    IncrementSize();
+    auto status = IncrementSize();
+    if (!status.ok()) {
+      // This should never happen, since the size node should never be anything other than
+      // literal, parameter, or expression.
+      CERATA_LOG(FATAL, status.msg());
+    }
   }
 
   // Return the new node.
@@ -97,7 +115,8 @@ Node *NodeArray::node(size_t i) const {
   if (i < nodes_.size()) {
     return nodes_[i].get();
   } else {
-    CERATA_LOG(FATAL, "Index " + std::to_string(i) + " out of bounds for node " + ToString());
+    CERATA_LOG(FATAL,
+               "Index " + std::to_string(i) + " out of bounds for node " + ToString());
   }
 }
 
@@ -109,13 +128,14 @@ void NodeArray::SetParent(Graph *parent) {
   }
 }
 
-size_t NodeArray::IndexOf(const Node &n) const {
+Result<size_t> NodeArray::IndexOf(const Node &n) const {
   for (size_t i = 0; i < nodes_.size(); i++) {
     if (nodes_[i].get() == &n) {
       return i;
     }
   }
-  CERATA_LOG(FATAL, "Node " + n.ToString() + " is not element of " + this->ToString());
+  return error(Err::Node,
+               "Node " + n.ToString() + " is not element of " + this->ToString());
 }
 
 void NodeArray::SetType(const std::shared_ptr<Type> &type) {
@@ -125,18 +145,23 @@ void NodeArray::SetType(const std::shared_ptr<Type> &type) {
   }
 }
 
-NodeArray::NodeArray(std::string name, Node::NodeID id, std::shared_ptr<Node> base, const std::shared_ptr<Node> &size)
+NodeArray::NodeArray(std::string name,
+                     Node::NodeID id,
+                     std::shared_ptr<Node> base,
+                     const std::shared_ptr<Node> &size,
+                     Status *status)
     : Object(std::move(name), Object::ARRAY), node_id_(id), base_(std::move(base)) {
   base_->SetArray(this);
-  SetSize(size);
+  *status = SetSize(size);
 }
 
 std::shared_ptr<Object> NodeArray::Copy() const {
-  auto ret = std::make_shared<NodeArray>(name(), node_id_, base_, intl(0));
-  return ret;
+  return NodeArray::Make(name(), node_id_, base_, intl(0)).value();
 }
 
-NodeArray *NodeArray::CopyOnto(Graph *dst, const std::string &name, NodeMap *rebinding) {
+Result<NodeArray *> NodeArray::CopyOnto(Graph *dst,
+                                        const std::string &name,
+                                        NodeMap *rebinding) {
   // Make a normal copy (that does not rebind the type generics).
   auto result = std::dynamic_pointer_cast<NodeArray>(this->Copy());
   result->SetName(name);
@@ -145,10 +170,10 @@ NodeArray *NodeArray::CopyOnto(Graph *dst, const std::string &name, NodeMap *reb
   std::shared_ptr<Node> new_size = result->size_;
   if (size_->IsParameter()) {
     if (rebinding->count(size_.get()) == 0) {
-      CERATA_LOG(FATAL, "Size node parameters of NodeArray " + size_->name()
+      return error(Err::Node, "Size node parameters of NodeArray " + size_->name()
           + " must be in rebind map before NodeArray can be copied.");
     } else {
-      result->SetSize(rebinding->at(size_.get())->shared_from_this());
+      RETURN_RERRS(result->SetSize(rebinding->at(size_.get())->shared_from_this()));
     }
   }
 
@@ -168,40 +193,71 @@ NodeArray *NodeArray::CopyOnto(Graph *dst, const std::string &name, NodeMap *reb
   return result.get();
 }
 
-PortArray::PortArray(const std::shared_ptr<Port> &base,
-                     const std::shared_ptr<Node> &size) :
-    NodeArray(base->name(), Node::NodeID::PORT, base, size), Term(base->dir()) {}
+Result<std::shared_ptr<NodeArray>> NodeArray::Make(std::string name,
+                                                   Node::NodeID id,
+                                                   std::shared_ptr<Node> base,
+                                                   const std::shared_ptr<Node> &size) {
+  Status status;
+  auto result = std::shared_ptr<NodeArray>(new NodeArray(std::move(name),
+                                                         id,
+                                                         std::move(base),
+                                                         size,
+                                                         &status));
+  if (!status.ok()) {
+    return error(status.err(), status.msg());
+  }
 
-std::shared_ptr<PortArray> port_array(const std::string &name,
-                                      const std::shared_ptr<Type> &type,
-                                      const std::shared_ptr<Node> &size,
-                                      Port::Dir dir,
-                                      const std::shared_ptr<ClockDomain> &domain) {
-  auto base_node = port(name, type, dir, domain);
-  auto *port_array = new PortArray(base_node, size);
-  return std::shared_ptr<PortArray>(port_array);
+  return result;
 }
 
-std::shared_ptr<PortArray> port_array(const std::shared_ptr<Port> &base_node,
-                                      const std::shared_ptr<Node> &size) {
-  auto *port_array = new PortArray(base_node, size);
-  return std::shared_ptr<PortArray>(port_array);
+PortArray::PortArray(const std::shared_ptr<Port> &base,
+                     const std::shared_ptr<Node> &size,
+                     Status *status) :
+    NodeArray(base->name(), Node::NodeID::PORT, base, size, status), Term(base->dir()) {}
+
+Result<std::shared_ptr<PortArray>> PortArray::Make(
+    const std::string &name,
+    const std::shared_ptr<Type> &type,
+    const std::shared_ptr<Node> &size,
+    Port::Dir dir,
+    const std::shared_ptr<ClockDomain> &domain) {
+  Status status;
+  auto base_node = port(name, type, dir, domain);
+  auto result = std::shared_ptr<PortArray>(new PortArray(base_node, size, &status));
+  RETURN_RERRS(status);
+  return result;
+}
+
+Result<std::shared_ptr<PortArray>> PortArray::Make(const std::shared_ptr<Port> &base_node,
+                                                   const std::shared_ptr<Node> &size) {
+  Status status;
+  auto result = std::shared_ptr<PortArray>(new PortArray(base_node, size, &status));
+  RETURN_RERRS(status);
+  return result;
 }
 
 std::shared_ptr<Object> PortArray::Copy() const {
   // Create the new PortArray using the new nodes.
-  auto result = port_array(name(), base_->type()->shared_from_this(), intl(0), dir_, *GetDomain(*base_));
-  // Return the resulting object.
-  return result;
+  auto result = PortArray::Make(name(),
+                                base_->type()->shared_from_this(),
+                                intl(0),
+                                dir_,
+                                *GetDomain(*base_));
+  // This should never throw if port arrays are constructed properly:
+  return result.value();
 }
 
-std::shared_ptr<SignalArray> signal_array(const std::string &name,
-                                          const std::shared_ptr<Type> &type,
-                                          const std::shared_ptr<Node>& size,
-                                          const std::shared_ptr<ClockDomain> &domain) {
+Result<std::shared_ptr<SignalArray>> SignalArray::Make(
+    const std::string &name,
+    const std::shared_ptr<Type> &type,
+    const std::shared_ptr<Node> &size,
+    const std::shared_ptr<ClockDomain> &domain) {
+  Status status;
   auto base_node = signal(name, type, domain);
-  auto *sig_array = new SignalArray(base_node, size);
-  return std::shared_ptr<SignalArray>(sig_array);
+  auto result = std::shared_ptr<SignalArray>(new SignalArray(base_node, size, &status));
+  RETURN_RERRS(status);
+  return result;
+
 }
 
 }  // namespace cerata

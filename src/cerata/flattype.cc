@@ -46,7 +46,10 @@ std::string FlatType::name(const NamePart &root, const std::string &sep) const {
   return ret.str();
 }
 
-FlatType::FlatType(Type *t, std::vector<NamePart> prefix, const std::string &name, bool invert)
+FlatType::FlatType(Type *t,
+                   std::vector<NamePart> prefix,
+                   const std::string &name,
+                   bool invert)
     : type_(t), reverse_(invert) {
   name_parts_ = std::move(prefix);
   name_parts_.emplace_back(name, true);
@@ -121,12 +124,9 @@ std::string ToString(std::vector<FlatType> flat_type_list) {
 }
 
 bool ContainsFlatType(const std::vector<FlatType> &flat_types_list, const Type *type) {
-  for (const auto &ft : flat_types_list) {
-    if (ft.type_ == type) {
-      return true;
-    }
-  }
-  return false;
+  return std::any_of(flat_types_list.begin(),
+                     flat_types_list.end(),
+                     [=](const auto &ft) { return ft.type_ == type; });
 }
 
 int64_t IndexOfFlatType(const std::vector<FlatType> &flat_types_list, const Type *type) {
@@ -175,7 +175,8 @@ TypeMapper &TypeMapper::Add(int64_t a, int64_t b) {
 std::string TypeMapper::ToString() const {
   constexpr int w = 20;
   std::stringstream ret;
-  ret << "TypeMapper (a) " << a()->ToString(true, true) + " => (b) " + b()->ToString(true, true) + "\n";
+  ret << "TypeMapper (a) "
+      << a()->ToString(true, true) + " => (b) " + b()->ToString(true, true) + "\n";
   ret << "  Meta: " + ::cerata::ToString(meta) + "\n";
   ret << std::setw(w) << " " << " | ";
 
@@ -224,7 +225,8 @@ bool TypeMapper::CanConvert(const Type *a, const Type *b) const {
 
 std::shared_ptr<TypeMapper> TypeMapper::Inverse() const {
   auto result = std::make_shared<TypeMapper>(b_, a_);  // Create a new mapper.
-  result->matrix_ = matrix_.Transpose();  // Copy over a transposed version of the mapping matrix.
+  result->matrix_ =
+      matrix_.Transpose();  // Copy over a transposed version of the mapping matrix.
   result->meta = this->meta;  // Copy over metadata.
   return result;
 }
@@ -282,7 +284,8 @@ void TypeMapper::SetMappingMatrix(MappingMatrix<int64_t> map_matrix) {
   matrix_ = std::move(map_matrix);
 }
 
-std::shared_ptr<TypeMapper> TypeMapper::Make(const std::shared_ptr<Type> &a, const std::shared_ptr<Type> &b) {
+std::shared_ptr<TypeMapper> TypeMapper::Make(const std::shared_ptr<Type> &a,
+                                             const std::shared_ptr<Type> &b) {
   return Make(a.get(), b.get());
 }
 
@@ -317,27 +320,27 @@ std::string MappingPair::ToString() const {
   return ret.str();
 }
 
-std::shared_ptr<Node> MappingPair::width_a(const std::optional<std::shared_ptr<Node>> &no_width_increment) const {
+std::shared_ptr<Node> MappingPair::width_a(const OptionalNode &nwi) const {
   std::shared_ptr<Node> result = intl(0);
   for (int64_t i = 0; i < num_a(); i++) {
     auto fw = flat_type_a(i).type_->width();
     if (fw) {
       result = result + fw.value();
-    } else if (no_width_increment) {
-      result = result + *no_width_increment;
+    } else if (nwi) {
+      result = result + *nwi;
     }
   }
   return result;
 }
 
-std::shared_ptr<Node> MappingPair::width_b(const std::optional<std::shared_ptr<Node>> &no_width_increment) const {
+std::shared_ptr<Node> MappingPair::width_b(const std::optional<std::shared_ptr<Node>> &nwi) const {
   std::shared_ptr<Node> result = intl(0);
   for (int64_t i = 0; i < num_b(); i++) {
     auto fw = flat_type_b(i).type_->width();
     if (fw) {
       result = result + fw.value();
-    } else if (no_width_increment) {
-      result = result + *no_width_increment;
+    } else if (nwi) {
+      result = result + *nwi;
     }
   }
   return result;

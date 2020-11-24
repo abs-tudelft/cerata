@@ -26,27 +26,36 @@
 namespace cerata {
 
 /**
- * @brief Get all potential child graphs of a graph.
- * @param top_graph           The top-level graph to inspect.
- * @param graphs_out          A list of graphs to append the output to.
- * @param include_components  Whether to recurse down the components used by any instances in the graph.
+ * \brief Get all potential child graphs of a graph.
+ * \param top_graph           The top-level graph to inspect.
+ * \param graphs_out          A list of graphs to append the output to.
+ * \param include_components  Whether to recurse down the components used by any instances
+ *                            in the graph.
  */
-void GetAllGraphs(Graph *top_graph, std::vector<Graph *> *graphs_out, bool include_components = false);
+void GetAllGraphs(Graph *top_graph,
+                  std::vector<Graph *> *graphs_out,
+                  bool include_components = false);
 
 /**
- * @brief Get all objects from a component.
- * @param top_component       The top-level component to inspect.
- * @param objects_out         A list of objects to append the output to.
- * @param include_instances   Whether to recurse down the instances in the top-level graph.
+ * \brief Get all objects from a component.
+ * \param top_component       The top-level component to inspect.
+ * \param objects_out         A list of objects to append the output to.
+ * \param include_instances   Whether to recurse down the instances in the top-level
+ *                            graph.
  */
-void GetAllObjects(Component *top_component, std::vector<Object *> *objects_out, bool include_instances = false);
+void GetAllObjects(Component *top_component,
+                   std::vector<Object *> *objects_out,
+                   bool include_instances = false);
 
 /**
- * @brief Get all types used in a component, including nested types.
- * @param top_component       The top-level component to inspect.
- * @param types_out           A list of types to append the output to.
- * @param include_instances   Whether to recurse down the instances in the top-level graph.
+ * \brief Get all types used in a component, including nested types.
+ * \param top_component       The top-level component to inspect.
+ * \param types_out           A list of types to append the output to.
+ * \param include_instances   Whether to recurse down the instances in the top-level
+ *                            graph.
  */
-void GetAllTypes(Component *top_component, std::vector<Type *> *types_out, bool include_instances = false);
+void GetAllTypes(Component *top_component,
+                 std::vector<Type *> *types_out,
+                 bool include_instances = false);
 
 }  // namespace cerata

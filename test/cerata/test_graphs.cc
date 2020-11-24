@@ -31,9 +31,9 @@ TEST(Instances, NodeMap) {
   auto comp = component("test", {par, sig, lit, exp, prt});
 
   auto top = component("top");
-  auto inst = top->Instantiate(comp, "inst");
+  auto *inst = top->Instantiate(comp, "inst");
 
-  auto map = inst->comp_to_inst_map();
+  auto *map = inst->comp_to_inst_map();
 
   // Ports and parameters should be on the instance graph.
   ASSERT_EQ(map->at(par.get()), inst->par("par"));
@@ -62,11 +62,11 @@ TEST(Instances, NodeArrayMap) {
   auto sig = signal("sig", vector(par));
   auto lit = strl("str");
   auto exp = par * 2;
-  auto prt = port_array("prt", vector(exp), size, Port::Dir::IN);
+  auto prt = PortArray::Make("prt", vector(exp), size, Port::Dir::IN).value();
   auto comp = component("test", {par, size, sig, lit, exp, prt});
   auto top = component("top");
-  auto inst = top->Instantiate(comp, "inst");
-  auto map = inst->comp_to_inst_map();
+  auto *inst = top->Instantiate(comp, "inst");
+  auto *map = inst->comp_to_inst_map();
 
   // Parameters should be on the instance graph.
   ASSERT_EQ(map->at(par.get()), inst->par("par"));

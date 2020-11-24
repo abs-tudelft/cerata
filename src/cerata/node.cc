@@ -36,13 +36,16 @@ std::string Node::ToString() const {
   return name();
 }
 
-void ImplicitlyRebindNodes(Graph *dst, const std::vector<Node *> &nodes, NodeMap *rebinding) {
+void ImplicitlyRebindNodes(Graph *dst,
+                           const std::vector<Node *> &nodes,
+                           NodeMap *rebinding) {
   for (const auto &n : nodes) {
     if (rebinding->count(n) > 0) {
       // If it's already in the map, skip it.
       continue;
     } else if (dst->Has(n->name())) {
-      // If it already has a node with that name, select that one for rebinding. This is the implicit part.
+      // If it already has a node with that name, select that one for rebinding.
+      // This is the implicit part.
       (*rebinding)[n] = dst->Get<Node>(n->name());
     } else if (!n->IsLiteral()) {
       // We skip literals. Any other nodes we copy onto the destination graph.
@@ -55,7 +58,8 @@ Node *Node::CopyOnto(Graph *dst, const std::string &name, NodeMap *rebinding) co
   // Make a normal copy (that does not rebind the type generics).
   auto result = std::dynamic_pointer_cast<Node>(this->Copy());
   result->SetName(name);
-  // Default node only has a type in which other nodes could be referenced through the type's generics.
+  // Default node only has a type in which other nodes could be referenced through the
+  // type's generics.
   auto generics = this->type()->GetGenerics();
   // If it has any generics, we might need to rebind them.
   if (!generics.empty()) {
@@ -237,11 +241,12 @@ std::string ToString(Node::NodeID id) {
   switch (id) {
     case Node::NodeID::PORT:return "Port";
     case Node::NodeID::SIGNAL:return "Signal";
-    case Node::NodeID::LITERAL:return "Literal";
     case Node::NodeID::PARAMETER:return "Parameter";
+    case Node::NodeID::LITERAL:return "Literal";
     case Node::NodeID::EXPRESSION:return "Expression";
   }
-  throw std::runtime_error("Corrupted node type.");
+  // This should never happen, but we need to make the compiler happy:
+  throw std::runtime_error("Corrupted node ID.");
 }
 
 void GetObjectReferences(const Object &obj, std::vector<Object *> *out) {

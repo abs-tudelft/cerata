@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
-project(cerata VERSION 0.0.11 LANGUAGES CXX)
+project(cerata VERSION 0.0.12 LANGUAGES CXX)
 
 include(FetchContent)
 
@@ -17,6 +17,12 @@ FetchContent_Declare(putong
   GIT_TAG         master
   )
 FetchContent_MakeAvailable(putong)
+
+FetchContent_Declare(expected
+  GIT_REPOSITORY  https://github.com/TartanLlama/expected.git
+  GIT_TAG         v1.0.0
+  )
+FetchContent_MakeAvailable(expected)
 
 option(BUILD_CERATA_TESTS "Build cerata tests" OFF)
 set(BUILD_TESTS ${BUILD_CERATA_TESTS})
@@ -52,6 +58,7 @@ add_compile_unit(
     test/cerata/test_nodes.cc
     test/cerata/test_graphs.cc
   DEPS
+    expected
     putong
 )
 
@@ -65,7 +72,7 @@ if(BUILD_CERATA_DOT)
       CXX_STANDARD 17
       CXX_STANDARD_REQUIRED ON
     SRCS
-      src/cerata/dot/dot.cc
+      src/cerata/dot/api.cc
       src/cerata/dot/style.cc
     TSTS
       test/cerata/dot/test_dot.cc
@@ -92,13 +99,14 @@ if(BUILD_CERATA_VHDL)
       src/cerata/vhdl/instantiation.cc
       src/cerata/vhdl/resolve.cc
       src/cerata/vhdl/template.cc
-      src/cerata/vhdl/vhdl.cc
+      src/cerata/vhdl/api.cc
       src/cerata/vhdl/vhdl_types.cc
     TSTS
+      test/cerata/vhdl/test_assignments.cc
       test/cerata/vhdl/test_declarators.cc
       test/cerata/vhdl/test_designs.cc
       test/cerata/vhdl/test_instantiators.cc
-      test/cerata/vhdl/test_assignments.cc
+      test/cerata/vhdl/test_output.cc
     DEPS
       cerata::core
       cerata::dot
@@ -127,7 +135,7 @@ if(BUILD_CERATA_YAML)
       CXX_STANDARD 17
       CXX_STANDARD_REQUIRED ON
     SRCS
-      src/cerata/yaml/yaml.cc
+      src/cerata/yaml/api.cc
     TSTS
       test/cerata/yaml/test_yaml.cc
     DEPS

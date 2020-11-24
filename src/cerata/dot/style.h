@@ -24,17 +24,17 @@
 
 namespace cerata::dot {
 
-/// @brief Return indent string.
+/// \brief Return indent string.
 inline std::string tab(uint n) {
   return std::string(2 * n, ' ');
 }
 
-/// @brief Return indent string.
+/// \brief Return indent string.
 inline std::string tab(int n) {
   return tab(static_cast<uint>(n));
 }
 
-/// @brief Sanitize a string for usage in DOT.
+/// \brief Sanitize a string for usage in DOT.
 inline std::string sanitize(std::string in) {
   std::replace(in.begin(), in.end(), ':', '_');
   std::replace(in.begin(), in.end(), '-', '_');
@@ -42,7 +42,7 @@ inline std::string sanitize(std::string in) {
   return in;
 }
 
-/// @brief Assign with quotes.
+/// \brief Assign with quotes.
 inline std::string awq(const std::string &attribute, const std::string &style) {
   if (!style.empty()) {
     return attribute + "=\"" + style + "\"";
@@ -66,16 +66,16 @@ struct Palette {
   std::vector<std::string> m;  ///< Medium
   std::vector<std::string> d;  ///< Dark
 
-  /// @brief Default palette
+  /// \brief Default palette
   static Palette normal();
 };
 
 /// Convenience structure to build up dot styles
 struct StyleBuilder {
   std::vector<std::string> parts;  ///< Parts of the style.
-  /// @brief Append a part to the style.
+  /// \brief Append a part to the style.
   StyleBuilder &operator<<(const std::string &part);
-  /// @brief Generate the style string.
+  /// \brief Generate the style string.
   std::string ToString();
 };
 
@@ -105,18 +105,18 @@ struct Config {
     } types;  ///< Type configuration.
   } nodes;  ///< Node configuration.
 
-  /// @brief Return a configuration that will generate every construct.
+  /// \brief Return a configuration that will generate every construct.
   static Config all();
-  /// @brief Return a configuration that will generate default constructs.
+  /// \brief Return a configuration that will generate default constructs.
   static Config normal();
-  /// @brief Return a configuration that will generate onnly stream constructs.
+  /// \brief Return a configuration that will generate only stream constructs.
   static Config streams();
-  /// @brief Return whether a node should be generated on the DOT graph.
-  bool operator()(const Node &node);
+  /// \brief Return whether a node should be generated on the DOT graph.
+  bool operator()(const Node &node) const;
 };
 
 /**
- * @brief Dot style configuration
+ * \brief Dot style configuration
  */
 struct Style {
   /// Short-hand for std::string.
@@ -128,7 +128,7 @@ struct Style {
     str color;  ///< Subgraph color.
   } subgraph;   ///< Style for sub graphs.
 
-  /// @brief Node group configuration
+  /// \brief Node group configuration
   struct NodeGroup {
     str base;   ///< Base style for groups.
     str color;  ///< Color for groups.
@@ -185,23 +185,23 @@ struct Style {
   /// Configuration of what types of constructs to show or hide for this style.
   Config config;
 
-  /// @brief Generate a HTML table cell from a type.
+  /// \brief Generate a HTML table cell from a type.
   std::string GenHTMLTableCell(const Type &t,
                                const std::string &name,
                                int level = 0);
 
-  /// @brief Generate a DOT record cell from a type
+  /// \brief Generate a DOT record cell from a type
   static std::string GenDotRecordCell(const Type &t,
                                       const std::string &name,
                                       int level = 0);
 
-  /// @brief Get the label for a node.
+  /// \brief Get the label for a node.
   std::string GetLabel(const Node &n);
 
-  /// @brief Get the style for a node
+  /// \brief Get the style for a node
   std::string GetStyle(const Node &n);
 
-  /// @brief Default style
+  /// \brief Default style
   static Style normal();
 };
 

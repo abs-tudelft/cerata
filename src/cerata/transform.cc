@@ -24,14 +24,16 @@
 
 namespace cerata {
 
-void GetAllGraphs(Graph *top_graph, std::vector<Graph *> *graphs_out, bool include_components) {
+void GetAllGraphs(Graph *top_graph,
+                  std::vector<Graph *> *graphs_out,
+                  bool include_components) {
   // Insert this graph
   graphs_out->push_back(top_graph);
 
   // If this is a component, it may have child graphs.
   if (top_graph->IsComponent()) {
     // Obtain children, that must always be instances.
-    auto comp = dynamic_cast<Component *>(top_graph);
+    auto *comp = dynamic_cast<Component *>(top_graph);
     auto instances = comp->children();
     graphs_out->insert(graphs_out->end(), instances.begin(), instances.end());
 
@@ -45,7 +47,9 @@ void GetAllGraphs(Graph *top_graph, std::vector<Graph *> *graphs_out, bool inclu
   }
 }
 
-void GetAllObjects(Component *top_component, std::vector<Object *> *objects, bool include_instances) {
+void GetAllObjects(Component *top_component,
+                   std::vector<Object *> *objects,
+                   bool include_instances) {
   std::vector<Graph *> graphs;
 
   if (include_instances) {
@@ -58,7 +62,9 @@ void GetAllObjects(Component *top_component, std::vector<Object *> *objects, boo
   }
 }
 
-void GetAllTypes(Component *top_component, std::vector<Type *> *types, bool include_instances) {
+void GetAllTypes(Component *top_component,
+                 std::vector<Type *> *types,
+                 bool include_instances) {
   std::vector<Object *> objects;
   GetAllObjects(top_component, &objects, include_instances);
 

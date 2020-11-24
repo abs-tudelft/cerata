@@ -15,7 +15,7 @@
 #include <gmock/gmock.h>
 
 #include <cerata/api.h>
-#include <cerata/vhdl/vhdl.h>
+#include <cerata/vhdl/api.h>
 
 #include "cerata/test_designs.h"
 #include "cerata/test_utils.h"
@@ -39,17 +39,17 @@ TEST(VHDL_DECL, SignalRecord) {
 
 TEST(VHDL_DECL, SignalArray) {
   auto size = intl(2);
-  auto sig_array = signal_array("test", bit(), size);
+  auto sig_array = SignalArray::Make("test", bit(), size).value();
   auto code = vhdl::Decl::Generate(*sig_array).ToString();
   ASSERT_EQ(code, "signal test : std_logic_vector(1 downto 0);\n");
 }
 
 TEST(VHDL_DECL, SignalRecordArray) {
   auto size = intl(2);
-  auto sig_array = signal_array("test",
-                                record({field("a", vector(8)),
-                                        field("b", bit())}),
-                                size);
+  auto sig_array = SignalArray::Make("test",
+                                     record({field("a", vector(8)),
+                                             field("b", bit())}),
+                                     size).value();
   auto code = vhdl::Decl::Generate(*sig_array).ToString();
   ASSERT_EQ(code, "signal test_a : std_logic_vector(15 downto 0);\n"
                   "signal test_b : std_logic_vector(1 downto 0);\n");
@@ -57,10 +57,10 @@ TEST(VHDL_DECL, SignalRecordArray) {
 
 TEST(VHDL_DECL, SignalRecordArrayParam) {
   auto size = parameter("SIZE", integer());
-  auto sig_array = signal_array("test",
-                                record({field("a", vector(8)),
-                                        field("b", bit())}),
-                                size);
+  auto sig_array = SignalArray::Make("test",
+                                     record({field("a", vector(8)),
+                                             field("b", bit())}),
+                                     size).value();
   auto code = vhdl::Decl::Generate(*sig_array).ToString();
   ASSERT_EQ(code, "signal test_a : std_logic_vector(SIZE*8-1 downto 0);\n"
                   "signal test_b : std_logic_vector(SIZE-1 downto 0);\n");
@@ -69,10 +69,10 @@ TEST(VHDL_DECL, SignalRecordArrayParam) {
 TEST(VHDL_DECL, SignalRecordParamArrayParam) {
   auto size = parameter("SIZE", integer());
   auto width = parameter("WIDTH", integer());
-  auto sig_array = signal_array("test",
-                                record({field("a", vector(width)),
-                                        field("b", bit())}),
-                                size);
+  auto sig_array = SignalArray::Make("test",
+                                     record({field("a", vector(width)),
+                                             field("b", bit())}),
+                                     size).value();
   auto code = vhdl::Decl::Generate(*sig_array).ToString();
   ASSERT_EQ(code, "signal test_a : std_logic_vector(SIZE*WIDTH-1 downto 0);\n"
                   "signal test_b : std_logic_vector(SIZE-1 downto 0);\n");
@@ -83,21 +83,21 @@ TEST(VHDL_DECL, ArrayPort) {
 
   auto size = parameter("size", integer(), intl(0));
   auto data = vector(8);
-  auto A = port_array("A", data, size, Term::OUT);
+  auto A = PortArray::Make("A", data, size, Term::OUT).value();
   auto B = port("B", data, Term::IN);
   auto C = port("C", data, Term::IN);
   auto top = component("top");
   auto X = component("X", {size, A});
   auto Y = component("Y", {B, C});
-  auto x_inst = top->Instantiate(X);
-  auto y_inst = top->Instantiate(Y);
+  auto *x_inst = top->Instantiate(X);
+  auto *y_inst = top->Instantiate(Y);
 
-  auto xa = x_inst->prt_arr("A");
+  auto *xa = x_inst->prt_arr("A");
   auto xa0 = xa->Append();
   auto xa1 = xa->Append();
 
-  auto yb = y_inst->prt("B");
-  auto yc = y_inst->prt("C");
+  auto *yb = y_inst->prt("B");
+  auto *yc = y_inst->prt("C");
 
   Connect(yb, xa0);
   Connect(yc, xa1);

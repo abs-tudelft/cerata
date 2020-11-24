@@ -38,8 +38,13 @@ std::shared_ptr<Object> Port::Copy() const {
   return result;
 }
 
-Port::Port(std::string name, std::shared_ptr<Type> type, Term::Dir dir, std::shared_ptr<ClockDomain> domain)
-    : NormalNode(std::move(name), Node::NodeID::PORT, std::move(type)), Synchronous(std::move(domain)), Term(dir) {}
+Port::Port(std::string name,
+           std::shared_ptr<Type> type,
+           Term::Dir dir,
+           std::shared_ptr<ClockDomain> domain)
+    : NormalNode(std::move(name), Node::NodeID::PORT, std::move(type)),
+      Synchronous(std::move(domain)),
+      Term(dir) {}
 
 Port &Port::Reverse() {
   for (auto &e : edges()) {
@@ -66,7 +71,7 @@ Term::Dir Term::Reverse(Term::Dir dir) {
     case IN: return OUT;
     case OUT: return IN;
   }
-  CERATA_LOG(FATAL, "Corrupted terminator direction.");
+  throw std::runtime_error("Corrupted terminator direction.");
 }
 
 }  // namespace cerata

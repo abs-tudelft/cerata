@@ -27,26 +27,27 @@ namespace cerata::vhdl {
 
 // VHDL specific type data
 
-/// @brief Obtain the width of a primitive, synthesizable type. If it is not primitive, returns a Literal 0 node
+/// \brief Obtain the width of a primitive, synthesizable type.
+/// If it is not primitive, returns a Literal 0 node
 std::shared_ptr<Node> GetWidth(const std::shared_ptr<Type> &type);
 
 // VHDL implementation specific types
 
-/// @brief A stream ready-valid handshake "valid" signal.
+/// \brief A stream ready-valid handshake "valid" signal.
 std::shared_ptr<Type> valid();
-/// @brief A stream ready-valid handshake "ready" signal.
+/// \brief A stream ready-valid handshake "ready" signal.
 std::shared_ptr<Type> ready();
 
 // VHDL port stuff
-/// @brief Return a VHDL version of a terminator direction.
+/// \brief Return a VHDL version of a terminator direction.
 std::string ToString(Term::Dir dir);
-/// @brief Reverse a terminator direction.
+/// \brief Reverse a terminator direction.
 Term::Dir Reverse(Term::Dir dir);
 
 /**
- * @brief Filter abstract types from a list of flattened types
- * @param list  The list to filter
- * @return      The filtered list
+ * \brief Filter abstract types from a list of flattened types
+ * \param list  The list to filter
+ * \return      The filtered list
  */
 std::vector<FlatType> FilterForVHDL(const std::vector<FlatType> &list);
 
@@ -64,8 +65,8 @@ struct Range {
   /// Top of the range.
   std::string top;
 
-  /// @brief Return a human-readable version of the range.
-  std::string ToString();
+  /// \brief Return a human-readable version of the range.
+  [[nodiscard]] std::string ToString() const;
 };
 
 }  // namespace cerata::vhdl

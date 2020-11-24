@@ -26,15 +26,17 @@
 
 namespace cerata::vhdl {
 
-MultiBlock Design::Generate() {
+MultiBlock Design::Generate() const {
   MultiBlock ret;
 
-  // TODO(johanpel): when proper copy is in place, make a deep copy of the whole structure before sanitizing,
-  //  in case multiple back ends are processing the graph. This currently modifies the original structure.
+  // TODO(johanpel): when proper copy is in place, make a deep copy of the whole
+  //  structure before sanitizing, in case multiple back ends are processing the graph.
+  //  This currently modifies the original structure.
 
-  // Resolve VHDL specific problems
-  // Make signals out of all ports, because of a whole bunch of reasons, including the most annoying locally static
-  // errors for port maps when wanting to use generics on the left hand side.
+  // Resolve VHDL specific problems.
+  // Make signals out of all ports, because of a whole bunch of reasons, including the
+  // most annoying locally static errors for port maps when wanting to use generics on
+  // the left hand side.
   Resolve::SignalizePorts(component_);
 
   // Place header

@@ -20,8 +20,11 @@
 
 namespace cerata {
 
-Signal::Signal(std::string name, std::shared_ptr<Type> type, std::shared_ptr<ClockDomain> domain)
-    : NormalNode(std::move(name), Node::NodeID::SIGNAL, std::move(type)), Synchronous(std::move(domain)) {}
+Signal::Signal(std::string name,
+               std::shared_ptr<Type> type,
+               std::shared_ptr<ClockDomain> domain)
+    : NormalNode(std::move(name), Node::NodeID::SIGNAL, std::move(type)),
+      Synchronous(std::move(domain)) {}
 
 std::shared_ptr<Object> Signal::Copy() const {
   auto result = signal(this->name(), this->type_, this->domain_);
@@ -40,7 +43,8 @@ std::shared_ptr<Signal> signal(const std::string &name,
   return ret;
 }
 
-std::shared_ptr<Signal> signal(const std::shared_ptr<Type> &type, const std::shared_ptr<ClockDomain> &domain) {
+std::shared_ptr<Signal> signal(const std::shared_ptr<Type> &type,
+                               const std::shared_ptr<ClockDomain> &domain) {
   auto ret = std::make_shared<Signal>(type->name() + "_signal", type, domain);
   return ret;
 }

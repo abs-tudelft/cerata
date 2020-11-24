@@ -24,8 +24,11 @@
 
 namespace cerata {
 
-Parameter::Parameter(std::string name, const std::shared_ptr<Type> &type, std::shared_ptr<Literal> default_value)
-    : NormalNode(std::move(name), Node::NodeID::PARAMETER, type), default_value_(std::move(default_value)) {
+Parameter::Parameter(std::string name,
+                     const std::shared_ptr<Type> &type,
+                     std::shared_ptr<Literal> default_value)
+    : NormalNode(std::move(name), Node::NodeID::PARAMETER, type),
+      default_value_(std::move(default_value)) {
   if (default_value_ == nullptr) {
     switch (type->id()) {
       case Type::ID::STRING: default_value_ = strl("");
@@ -45,7 +48,7 @@ Parameter::Parameter(std::string name, const std::shared_ptr<Type> &type, std::s
 std::shared_ptr<Parameter> parameter(const std::string &name,
                                      const std::shared_ptr<Type> &type,
                                      std::shared_ptr<Literal> default_value) {
-  auto p = new Parameter(name, type, std::move(default_value));
+  auto *p = new Parameter(name, type, std::move(default_value));
   return std::shared_ptr<Parameter>(p);
 }
 
@@ -73,13 +76,12 @@ Node *Parameter::value() const {
   }
 }
 
-Parameter *Parameter::SetValue(const std::shared_ptr<Node> &value) {
+Status Parameter::SetValue(const std::shared_ptr<Node> &value) {
   if (value->IsSignal() || value->IsPort()) {
-    CERATA_LOG(FATAL, "Parameter value can not be or refer to signal or port nodes.");
+    return Status(Err::Node,
+                  "Parameter value can not be or refer to signal or port nodes.");
   }
-
-  Connect(this, value);
-  return this;
+  return status(Connect(this, value));
 }
 
 std::shared_ptr<Object> Parameter::Copy() const {

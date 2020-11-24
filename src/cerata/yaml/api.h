@@ -17,7 +17,7 @@
 #include <yaml-cpp/yaml.h>
 
 #include "cerata/api.h"
-#include "cerata/yaml/yaml.h"
+#include "cerata/yaml/api.h"
 
 namespace cerata::yaml {
 

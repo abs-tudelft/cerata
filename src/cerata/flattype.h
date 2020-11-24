@@ -36,13 +36,16 @@ class Record;
 class Stream;
 class Node;
 
+using OptionalNode = std::optional<std::shared_ptr<Node>>;
+
 /// Convenience struct to generate names in parts.
 struct NamePart {
   NamePart() = default;
-  /// @brief Constuct a new NamePart.
-  explicit NamePart(std::string part, bool append_sep = true) : str(std::move(part)), sep(append_sep) {}
+  /// \brief Constuct a new NamePart.
+  explicit NamePart(std::string part, bool append_sep = true)
+      : str(std::move(part)), sep(append_sep) {}
   /// The string of this name part.
-  std::string str = "";
+  std::string str;
   /// Whether we should insert a separator after this part.
   bool sep = false;
 };
@@ -50,38 +53,39 @@ struct NamePart {
 /// A flattened type.
 struct FlatType {
   FlatType() = default;
-  /// @brief Construct a FlatType.
+  /// \brief Construct a FlatType.
   FlatType(Type *t, std::vector<NamePart> prefix, const std::string &name, bool invert);
-  /// @brief A pointer to the original type.
+  /// \brief A pointer to the original type.
   Type *type_ = nullptr;
-  /// @brief Nesting level in a type hierarchy.
+  /// \brief Nesting level in a type hierarchy.
   int nesting_level_ = 0;
-  /// @brief Name parts of this flattened type.
+  /// \brief Name parts of this flattened type.
   std::vector<NamePart> name_parts_;
-  /// @brief Whether to invert this flattened type if it would be on a terminator node.
+  /// \brief Whether to invert this flattened type if it would be on a terminator node.
   bool reverse_ = false;
-  /// @brief Return the name of this flattened type, constructed from the name parts.
-  [[nodiscard]] std::string name(const NamePart &root = NamePart(), const std::string &sep = "_") const;
+  /// \brief Return the name of this flattened type, constructed from the name parts.
+  [[nodiscard]] std::string name(const NamePart &root = NamePart(),
+                                 const std::string &sep = "_") const;
 };
 
-/// @brief Compares two FlatTypes first by name, then by nesting level. Useful for sorting.
+/// \brief Compares two FlatTypes first by name, then by nesting level.
 bool operator<(const FlatType &a, const FlatType &b);
 
 // Flattening functions for nested types:
 
-/// @brief Flatten a Record.
+/// \brief Flatten a Record.
 void FlattenRecord(std::vector<FlatType> *list,
                    const Record *record,
                    const std::optional<FlatType> &parent,
                    bool invert);
 
-/// @brief Flatten a Stream.
+/// \brief Flatten a Stream.
 void FlattenStream(std::vector<FlatType> *list,
                    const Stream *stream,
                    const std::optional<FlatType> &parent,
                    bool invert);
 
-/// @brief Flatten any Type.
+/// \brief Flatten any Type.
 void Flatten(std::vector<FlatType> *list,
              Type *type,
              const std::optional<FlatType> &parent,
@@ -89,35 +93,35 @@ void Flatten(std::vector<FlatType> *list,
              bool invert,
              bool sep = true);
 
-/// @brief Flatten and return a list of FlatTypes.
+/// \brief Flatten and return a list of FlatTypes.
 std::vector<FlatType> Flatten(Type *type);
 
-/// @brief Return true if some Type is contained in a list of FlatTypes, false otherwise.
+/// \brief Return true if some Type is contained in a list of FlatTypes, false otherwise.
 bool ContainsFlatType(const std::vector<FlatType> &flat_types_list, const Type *type);
 
-/// @brief Return the index of some Type in a list of FlatTypes.
+/// \brief Return the index of some Type in a list of FlatTypes.
 int64_t IndexOfFlatType(const std::vector<FlatType> &flat_types_list, const Type *type);
 
-/// @brief Convert a list of FlatTypes to a human-readable string.
+/// \brief Convert a list of FlatTypes to a human-readable string.
 std::string ToString(std::vector<FlatType> flat_type_list);
 
 /**
- * @brief A matrix used for TypeMapper.
+ * \brief A matrix used for TypeMapper.
  * @tparam T The type of matrix elements.
  */
 template<typename T>
 class MappingMatrix {
  public:
   /**
-   * @brief Construct a mapping matrix.
-   * @param height  The height of the matrix.
-   * @param width   The width of the matrix.
+   * \brief Construct a mapping matrix.
+   * \param height  The height of the matrix.
+   * \param width   The width of the matrix.
    */
   MappingMatrix(int64_t height, int64_t width) : height_(height), width_(width) {
     elements_ = std::vector<T>(height_ * width_, static_cast<T>(0));
   }
 
-  /// @brief Return a square identity matrix.
+  /// \brief Return a square identity matrix.
   static MappingMatrix Identity(int64_t dim) {
     MappingMatrix ret(dim, dim);
     for (int64_t i = 0; i < dim; i++) {
@@ -125,12 +129,12 @@ class MappingMatrix {
     }
   }
 
-  /// @brief Return the height of the matrix.
+  /// \brief Return the height of the matrix.
   int64_t height() { return height_; }
-  /// @brief Return the width of the matrix.
+  /// \brief Return the width of the matrix.
   int64_t width() { return width_; }
 
-  /// @brief Return a reference to a value in the matrix at some index.
+  /// \brief Return a reference to a value in the matrix at some index.
   T &get(int64_t y, int64_t x) {
     if (y >= height_ || x >= width_) {
       CERATA_LOG(FATAL, "Indices exceed matrix dimensions.");
@@ -138,7 +142,7 @@ class MappingMatrix {
     return elements_[width_ * y + x];
   }
 
-  /// @brief Return a const references to a value in the matrix at some index.
+  /// \brief Return a const references to a value in the matrix at some index.
   [[nodiscard]] const T &get(int64_t y, int64_t x) const {
     if (y >= height_ || x >= width_) {
       CERATA_LOG(FATAL, "Indices exceed matrix dimensions.");
@@ -146,17 +150,17 @@ class MappingMatrix {
     return elements_[width_ * y + x];
   }
 
-  /// @brief Return a reference to a value in the matrix at some index.
+  /// \brief Return a reference to a value in the matrix at some index.
   T &operator()(int64_t y, int64_t x) {
     return get(y, x);
   }
 
-  /// @brief Return a const references to a value in the matrix at some index.
+  /// \brief Return a const references to a value in the matrix at some index.
   const T &operator()(int64_t y, int64_t x) const {
     return get(y, x);
   }
 
-  /// @brief Return true if this is an identity matrix.
+  /// \brief Return true if this is an identity matrix.
   [[nodiscard]] bool IsIdentity() const {
     if (width_ == height_) {
       for (size_t d = 0; d < width_; d++) {
@@ -168,7 +172,7 @@ class MappingMatrix {
     return true;
   }
 
-  /// @brief Return the maximum of some column.
+  /// \brief Return the maximum of some column.
   [[nodiscard]] T MaxOfColumn(int64_t x) const {
     T max = 0;
     for (int64_t y = 0; y < height_; y++) {
@@ -179,7 +183,7 @@ class MappingMatrix {
     return max;
   }
 
-  /// @brief Return the maximum of some row.
+  /// \brief Return the maximum of some row.
   [[nodiscard]] T MaxOfRow(int64_t y) const {
     T max = 0;
     for (int64_t x = 0; x < width_; x++) {
@@ -190,7 +194,7 @@ class MappingMatrix {
     return max;
   }
 
-  /// @brief Obtain non-zero element indices and value from column x, sorted by value.
+  /// \brief Obtain non-zero element indices and value from column x, sorted by value.
   std::vector<std::pair<int64_t, T>> mapping_column(int64_t x) {
     std::vector<std::pair<int64_t, T>> ret;
     for (int64_t y = 0; y < height_; y++) {
@@ -205,7 +209,7 @@ class MappingMatrix {
     return ret;
   }
 
-  /// @brief Obtain non-zero element indices and value from row y, sorted by value.
+  /// \brief Obtain non-zero element indices and value from row y, sorted by value.
   std::vector<std::pair<int64_t, T>> mapping_row(int64_t y) {
     using pair = std::pair<int64_t, T>;
     std::vector<pair> ret;
@@ -221,13 +225,13 @@ class MappingMatrix {
     return ret;
   }
 
-  /// @brief Set the next (existing maximum + 1) value in a matrix at some position.
+  /// \brief Set the next (existing maximum + 1) value in a matrix at some position.
   MappingMatrix &SetNext(int64_t y, int64_t x) {
     get(y, x) = std::max(MaxOfColumn(x), MaxOfRow(y)) + 1;
     return *this;
   }
 
-  /// @brief Transpose the matrix.
+  /// \brief Transpose the matrix.
   [[nodiscard]] MappingMatrix Transpose() const {
     MappingMatrix ret(width_, height_);
     for (int64_t y = 0; y < height_; y++) {
@@ -238,13 +242,13 @@ class MappingMatrix {
     return ret;
   }
 
-  /// @brief Create an empty matrix of the same size.
+  /// \brief Create an empty matrix of the same size.
   [[nodiscard]] MappingMatrix Empty() const {
     MappingMatrix ret(height_, width_);
     return ret;
   }
 
-  /// @return Return a human-readable representation of the matrix.
+  /// \return Return a human-readable representation of the matrix.
   std::string ToString() {
     std::stringstream ret;
     for (int64_t y = 0; y < height_; y++) {
@@ -266,15 +270,16 @@ class MappingMatrix {
 };
 
 /**
- * @brief A structure representing a mapping pair for a type mapping.
+ * \brief A structure representing a mapping pair for a type mapping.
  *
- * The mapping pair typically contains one FlatType on one side (a or b), and one or multiple FlatTypes on the other
- * side (a or b). If, for example, side a contains one FlatType and b contains two FlatTypes (b0 and b1), that means
- * that if this is a mapping pair of a mapping between two types A and B, when some node X of type A and a node Y of
- * type B connect to each other, then in hardware FlatType b0 and b1 are concatenated onto a.
+ * The mapping pair typically contains one FlatType on one side (a or b), and one or
+ * multiple FlatTypes on the other side (a or b). If, for example, side a contains one
+ * FlatType and b contains two FlatTypes (b0 and b1), that means that if this is a mapping
+ * pair of a mapping between two types A and B, when some node X of type A and a node Y of
+ * type B connect to each other, then in hardware FlatType b0 and b1 are concatenated onto
+ * a.
  */
 struct MappingPair {
-  using OptionalNode = std::optional<std::shared_ptr<Node>>;  ///< Optional shared pointer to a node.
   using index = int64_t;  ///< Index type.
   using offset = int64_t;  ///< Offset type.
   /// Tuple that stores all information required by a mapping pair on one side.
@@ -283,88 +288,92 @@ struct MappingPair {
   std::vector<IOF> a;
   /// Flattype and its index in a mapping matrix on the "b"-side.
   std::vector<IOF> b;
-  /// @brief Return the number of FlatTypes on the "a"-side.
+  /// \brief Return the number of FlatTypes on the "a"-side.
   [[nodiscard]] int64_t num_a() const { return a.size(); }
-  /// @brief Return the number of FlatTypes on the "b"-side.
+  /// \brief Return the number of FlatTypes on the "b"-side.
   [[nodiscard]] int64_t num_b() const { return b.size(); }
-  /// @brief Return the index of the i-th FlatType on the "a"-side in the mapping matrix.
+  /// \brief Return the index of the i-th FlatType on the "a"-side in the mapping matrix.
   [[nodiscard]] index index_a(int64_t i) const { return std::get<0>(a[i]); }
-  /// @brief Return the index of the i-th FlatType on the "b"-side in the mapping matrix.
+  /// \brief Return the index of the i-th FlatType on the "b"-side in the mapping matrix.
   [[nodiscard]] index index_b(int64_t i) const { return std::get<0>(b[i]); }
-  /// @brief Return the offset of the i-th FlatType on the "a"-side in the mapping matrix.
+  /// \brief Return the offset of the i-th FlatType on the "a"-side in the mapping matrix.
   [[nodiscard]] offset offset_a(int64_t i) const { return std::get<1>(a[i]); }
-  /// @brief Return the offset of the i-th FlatType on the "b"-side in the mapping matrix.
+  /// \brief Return the offset of the i-th FlatType on the "b"-side in the mapping matrix.
   [[nodiscard]] offset offset_b(int64_t i) const { return std::get<1>(b[i]); }
-  /// @brief Return the i-th FlatType on the "a"-side in the mapping matrix.
+  /// \brief Return the i-th FlatType on the "a"-side in the mapping matrix.
   [[nodiscard]] FlatType flat_type_a(int64_t i) const { return std::get<2>(a[i]); }
-  /// @brief Return the i-th FlatType on the "b"-side in the mapping matrix.
+  /// \brief Return the i-th FlatType on the "b"-side in the mapping matrix.
   [[nodiscard]] FlatType flat_type_b(int64_t i) const { return std::get<2>(b[i]); }
 
   /**
-   * @brief Return the total width of the types on side A.
-   * @param no_width_increment  In case some flat type doesn't have a width, increment it with this parameter.
-   * @return                    The total width on side A.
+   * \brief Return the total width of the types on side A.
+   * \param nwi In case some flat type doesn't have a width, increment it with this
+   *            parameter.
+   * \return The total width on side A.
    */
-  [[nodiscard]] std::shared_ptr<Node> width_a(const OptionalNode &no_width_increment = {}) const;
+  [[nodiscard]] std::shared_ptr<Node> width_a(const OptionalNode &nwi = {}) const;
 
   /**
-   * @brief Return the total width of the types on side B.
-   * @param no_width_increment  In case some flat type doesn't have a width, increment it with this parameter.
-   * @return                    The total width on side B.
+   * \brief Return the total width of the types on side B.
+   * \param nwi In case some flat type doesn't have a width, increment it with this
+   *            parameter.
+   * \return The total width on side B.
    */
-  [[nodiscard]] std::shared_ptr<Node> width_b(const OptionalNode &no_width_increment = {}) const;
+  [[nodiscard]] std::shared_ptr<Node> width_b(const OptionalNode &nwi = {}) const;
 
-  /// @brief Generate a human-readable version of this MappingPair
+  /// \brief Generate a human-readable version of this MappingPair
   [[nodiscard]] std::string ToString() const;
 };
 
 /**
- * @brief A structure to dynamically define type mappings between flattened types.
+ * \brief A structure to dynamically define type mappings between flattened types.
  *
- * Useful for ordered concatenation of N synthesizable types onto M synthesizable types in any way.
+ * Useful for ordered concatenation of N synthesizable types onto M synthesizable types in
+ * any way.
  */
 class TypeMapper : public Named {
  public:
-  /// @brief TypeMapper constructor. Constructs an empty type mapping.
+  /// \brief TypeMapper constructor. Constructs an empty type mapping.
   TypeMapper(Type *a, Type *b);
-  /// @brief Construct a new TypeMapper from some type to itself, and return a smart pointer to it.
+  /// \brief Construct a new TypeMapper from a type to itself.
   static std::shared_ptr<TypeMapper> Make(Type *a);
-  /// @brief Construct a new TypeMapper from some type to another type, and automatically determine the type mapping.
+  /// \brief Construct an automatically derived mapping from some type to another type.
   static std::shared_ptr<TypeMapper> MakeImplicit(Type *a, Type *b);
-  /// @brief Construct a new, empty TypeMapper between two types.
+  /// \brief Construct a new, empty TypeMapper between two types.
   static std::shared_ptr<TypeMapper> Make(Type *a, Type *b);
-  /// @brief Construct a new, empty TypeMapper between two types.
-  static std::shared_ptr<TypeMapper> Make(const std::shared_ptr<Type> &a, const std::shared_ptr<Type> &b);
+  /// \brief Construct a new, empty TypeMapper between two types.
+  static std::shared_ptr<TypeMapper> Make(const std::shared_ptr<Type> &a,
+                                          const std::shared_ptr<Type> &b);
 
-  /// @brief Add a mapping between two FlatTypes to the mapper.
+  /// \brief Add a mapping between two FlatTypes to the mapper.
   TypeMapper &Add(int64_t a, int64_t b);
-  /// @brief Return the mapping matrix of this TypeMapper.
+  /// \brief Return the mapping matrix of this TypeMapper.
   MappingMatrix<int64_t> map_matrix();
-  /// @brief Set the mapping matrix of this TypeMapper.
+  /// \brief Set the mapping matrix of this TypeMapper.
   void SetMappingMatrix(MappingMatrix<int64_t> map_matrix);
 
-  /// @brief Return the list of flattened types on the "a"-side.
+  /// \brief Return the list of flattened types on the "a"-side.
   std::vector<FlatType> flat_a() const;
-  /// @brief Return the list of flattened types on the "b"-side.
+  /// \brief Return the list of flattened types on the "b"-side.
   std::vector<FlatType> flat_b() const;
-  /// @brief Return the type on the "a"-side.
+  /// \brief Return the type on the "a"-side.
   Type *a() const { return a_; }
-  /// @brief Return the type on the "b"-side.
+  /// \brief Return the type on the "b"-side.
   Type *b() const { return b_; }
 
-  /// @brief Return true if this TypeMapper can map type a to type b.
+  /// \brief Return true if this TypeMapper can map type a to type b.
   bool CanConvert(const Type *a, const Type *b) const;
 
-  /// @brief Return a new TypeMapper that is the inverse of this TypeMapper.
+  /// \brief Return a new TypeMapper that is the inverse of this TypeMapper.
   std::shared_ptr<TypeMapper> Inverse() const;
 
-  /// @brief Get a list of unique mapping pairs.
+  /// \brief Get a list of unique mapping pairs.
   std::vector<MappingPair> GetUniqueMappingPairs();
 
-  /// @brief Return a human-readable string of this TypeMapper.
+  /// \brief Return a human-readable string of this TypeMapper.
   std::string ToString() const;
 
-  /// @brief KV storage for metadata of tools or specific backend implementations
+  /// \brief KV storage for metadata of tools or specific backend implementations
   std::unordered_map<std::string, std::string> meta;
 
  protected:

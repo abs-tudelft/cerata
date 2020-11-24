@@ -100,7 +100,7 @@ Result<std::shared_ptr<Edge>> Connect(const std::shared_ptr<Node> &dst,
  * \param str A string out of which a string literal node will be created..
  * \return The edge connecting the nodes.
  */
-Result<std::shared_ptr<Edge>> Connect(Node *dst, std::string str);
+Result<std::shared_ptr<Edge>> Connect(Node *dst, const std::string &str);
 
 // Connect operators:
 

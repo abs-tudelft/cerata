@@ -14,10 +14,10 @@
 
 #include "cerata/vhdl/block.h"
 
+#include <cstdint>
 #include <regex>
-#include <string>
-#include <iostream>
 #include <sstream>
+#include <string>
 
 namespace cerata::vhdl {
 

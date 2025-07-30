@@ -111,7 +111,7 @@ endif()
 if(BUILD_CERATA_YAML)
   FetchContent_Declare(yaml
     GIT_REPOSITORY  https://github.com/jbeder/yaml-cpp.git
-    GIT_TAG         0.8.0
+    GIT_TAG         c9371de7836d113c0b14bfa15ca70f00ebb3ac6f
   )
   FetchContent_GetProperties(yaml)
   if(NOT yaml_POPULATED)
